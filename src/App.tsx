@@ -1,3 +1,4 @@
+import { ThemeProvider } from './components/ThemeContext';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -6,6 +7,7 @@ import SymptomLogger from './pages/SymptomLogger';
 import InsulinCalculator from './pages/InsulinCalculator';
 import Wellness from './pages/Wellness';
 import Settings from './pages/Settings';
+import MetabolicLab from './pages/MetabolicLab';
 import Auth from './pages/Auth';
 import { auth } from './config/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
@@ -25,35 +27,40 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen dark:bg-slate-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <Router>
-        <Routes>
-          <Route path="*" element={<Auth />} />
-        </Routes>
-      </Router>
+      <ThemeProvider defaultTheme="dark" storageKey="diabetes-ui-theme">
+        <Router>
+          <Routes>
+            <Route path="*" element={<Auth />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/glucose" element={<GlucoseTracker />} />
-          <Route path="/symptoms" element={<SymptomLogger />} />
-          <Route path="/calculator" element={<InsulinCalculator />} />
-          <Route path="/wellness" element={<Wellness />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <ThemeProvider defaultTheme="dark" storageKey="diabetes-ui-theme">
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/glucose" element={<GlucoseTracker />} />
+            <Route path="/symptoms" element={<SymptomLogger />} />
+            <Route path="/calculator" element={<InsulinCalculator />} />
+            <Route path="/wellness" element={<Wellness />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/lab" element={<MetabolicLab />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </ThemeProvider>
   );
 }
 

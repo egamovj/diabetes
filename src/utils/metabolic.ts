@@ -27,8 +27,47 @@ export const calculateTrend = (currentData: number[], previousData: number[]) =>
 /**
  * Gets the color and status text for HbA1c levels.
  */
-export const getHbA1cStatus = (hba1c: number) => {
-    if (hba1c < 5.7) return { label: 'Optimal', color: 'text-emerald-500', bg: 'bg-emerald-50' };
-    if (hba1c < 6.5) return { label: 'Pre-diabetic', color: 'text-amber-500', bg: 'bg-amber-50' };
-    return { label: 'Diabetic Range', color: 'text-red-500', bg: 'bg-red-50' };
+export const getHbA1cStatus = (hbA1c: number) => {
+    if (hbA1c < 5.7) return { label: 'Optimal', color: 'text-emerald-500', bgColor: 'bg-emerald-50' };
+    if (hbA1c < 6.5) return { label: 'Pre-diabetic', color: 'text-amber-500', bgColor: 'bg-amber-50' };
+    return { label: 'Diabetic Range', color: 'text-red-500', bgColor: 'bg-red-50' };
+};
+
+/**
+ * Calculates Time In Range percentages based on glucose entries
+ */
+export const calculateTIR = (glucoseValues: number[]) => {
+    if (glucoseValues.length === 0) return { inRange: 0, high: 0, low: 0 };
+
+    const low = glucoseValues.filter(v => v < 4.0).length;
+    const inRange = glucoseValues.filter(v => v >= 4.0 && v <= 8.5).length;
+    const high = glucoseValues.filter(v => v > 8.5).length;
+
+    const total = glucoseValues.length;
+    return {
+        low: Math.round((low / total) * 100),
+        inRange: Math.round((inRange / total) * 100),
+        high: Math.round((high / total) * 100)
+    };
+};
+
+/**
+ * Correlates meal logs with subsequent glucose readings (within 2 hours)
+ */
+export const correlateMealData = (meals: any[], glucose: any[]) => {
+    return meals.map(meal => {
+        const mealTime = new Date(meal.timestamp).getTime();
+        const postMealReading = glucose
+            .filter(g => {
+                const gTime = new Date(g.timestamp).getTime();
+                const diff = gTime - mealTime;
+                return diff > 0 && diff <= 120 * 60 * 1000; // Within 2 hours
+            })
+            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())[0];
+
+        return {
+            ...meal,
+            postGlucose: postMealReading?.value || null
+        };
+    }).filter(m => m.postGlucose !== null);
 };
