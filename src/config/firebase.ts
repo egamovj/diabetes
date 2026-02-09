@@ -5,12 +5,12 @@ import { getStorage } from "firebase/storage";
 
 // Placeholder config - User should replace with their actual credentials
 const firebaseConfig = {
-  apiKey: "AIzaSyDq3dlIwGxzK3Aav3A3U4rqSi9HeQnC2D8",
-  authDomain: "diabetes-1da67.firebaseapp.com",
-  projectId: "diabetes-1da67",
-  storageBucket: "diabetes-1da67.firebasestorage.app",
-  messagingSenderId: "37911801403",
-  appId: "1:379118014031:web:4732cd7b1ba4a898dda43a"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
