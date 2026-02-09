@@ -6,7 +6,6 @@ import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from './ThemeToggle';
 import SOSModal from './SOSModal';
 
 interface LayoutProps {

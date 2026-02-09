@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { calculateHbA1c, calculateTrend, getHbA1cStatus } from '../utils/metabolic';
 import { exportToCSV } from '../utils/export';
 import { useReminders } from '../hooks/useReminders';
+import { analyzeGlucoseTrend } from '../utils/prediction';
+import { BrainCircuit, Zap, AlertTriangle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
     const { data: glucoseEntries } = useHealthData('glucose');
@@ -51,6 +53,8 @@ const Dashboard: React.FC = () => {
         time: g.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         level: g.value
     })).slice(-10);
+
+    const prediction = analyzeGlucoseTrend(glucoseEntries);
 
     const activityFeed = [...glucoseEntries, ...symptomEntries]
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -187,6 +191,80 @@ const Dashboard: React.FC = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* AI Intelligence Card */}
+            <Card className="border-none shadow-[0_32px_64px_-12px_rgba(16,185,129,0.15)] dark:shadow-none bg-slate-900 dark:bg-slate-900 border border-slate-800 text-white rounded-[40px] overflow-hidden group relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/10 to-transparent pointer-events-none"></div>
+
+                {/* Visualizer Background */}
+                <div className="absolute top-0 right-0 h-full w-1/3 opacity-20 hidden md:block">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-transparent animate-pulse"></div>
+                </div>
+
+                <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10 relative z-10">
+                    <div className={cn(
+                        "h-24 w-24 rounded-[32px] flex items-center justify-center transition-all duration-700 shadow-2xl relative",
+                        prediction.riskLevel === 'CRITICAL' ? "bg-red-600 animate-bounce" :
+                            prediction.riskLevel === 'WATCHFUL' ? "bg-amber-500 text-white" : "bg-emerald-600"
+                    )}>
+                        <div className="absolute inset-0 rounded-[32px] bg-white opacity-20 animate-ping"></div>
+                        <BrainCircuit size={48} className="relative z-10" />
+                    </div>
+
+                    <div className="flex-1 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <Badge className={cn(
+                                "border-none font-black px-4 py-1 text-[10px] uppercase tracking-widest",
+                                prediction.riskLevel === 'CRITICAL' ? "bg-red-500 text-white" :
+                                    prediction.riskLevel === 'WATCHFUL' ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
+                            )}>
+                                AI Prediction: {prediction.riskLevel}
+                            </Badge>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Next 60 Minutes</span>
+                        </div>
+
+                        <div className="space-y-1">
+                            <h2 className="text-3xl font-black font-outfit uppercase tracking-tight leading-none">
+                                {prediction.message}
+                            </h2>
+                            <p className="text-emerald-400 font-bold text-sm italic">
+                                {prediction.advice}
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+                            <div className="space-y-0.5">
+                                <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Projected Level</p>
+                                <p className="text-xl font-black font-outfit">{prediction.projectedValue} <small className="text-[10px] opacity-40">mmol/L</small></p>
+                            </div>
+                            <div className="space-y-0.5">
+                                <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Rate of Change</p>
+                                <p className={cn(
+                                    "text-xl font-black font-outfit",
+                                    prediction.velocity < 0 ? "text-red-400" : "text-emerald-400"
+                                )}>
+                                    {prediction.velocity > 0 ? '+' : ''}{prediction.velocity} <small className="text-[10px] opacity-40">/h</small>
+                                </p>
+                            </div>
+                            {prediction.riskLevel !== 'OPTIMAL' && (
+                                <div className="hidden lg:flex items-center gap-2 col-span-2 bg-white/5 rounded-2xl px-4 border border-white/5">
+                                    <Zap size={16} className="text-amber-400" />
+                                    <p className="text-[10px] font-bold text-slate-300">Predictive engine suggests checking IOB or consuming glucose based on velocity.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {prediction.riskLevel === 'CRITICAL' && (
+                        <div className="flex flex-col gap-2">
+                            <Button className="bg-red-600 hover:bg-red-700 h-14 rounded-2xl font-black px-8 uppercase text-[10px] tracking-widest gap-2">
+                                <AlertTriangle size={16} />
+                                Urgent Action
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 {/* Chart Area */}
