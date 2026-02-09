@@ -71,12 +71,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="px-4 mt-8 mb-4">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Settings</p>
           </div>
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-500 hover:bg-emerald-50/50 hover:text-emerald-900 transition-all font-bold text-sm group"
+          <Link
+            to="/settings"
+            className={cn(
+              "group flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-sm",
+              location.pathname === '/settings'
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 translate-x-1"
+                : "text-slate-500 hover:bg-emerald-50/50 hover:text-emerald-900"
+            )}
           >
-            <Settings size={20} className="group-hover:text-emerald-600 transition-colors" />
-            Account Settings
-          </button>
+            <div className="flex items-center gap-3">
+              <Settings size={20} className={cn("transition-colors", location.pathname === '/settings' ? "text-white" : "group-hover:text-emerald-600")} />
+              Account Settings
+            </div>
+            {location.pathname === '/settings' && <ChevronRight size={14} className="opacity-60" />}
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-slate-100">

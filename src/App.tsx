@@ -5,6 +5,7 @@ import GlucoseTracker from './pages/GlucoseTracker';
 import SymptomLogger from './pages/SymptomLogger';
 import InsulinCalculator from './pages/InsulinCalculator';
 import Wellness from './pages/Wellness';
+import Settings from './pages/Settings';
 import Auth from './pages/Auth';
 import { auth } from './config/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
@@ -49,6 +50,7 @@ function App() {
           <Route path="/symptoms" element={<SymptomLogger />} />
           <Route path="/calculator" element={<InsulinCalculator />} />
           <Route path="/wellness" element={<Wellness />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </Router>
