@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Activity, Thermometer, Wind, Eye, Droplets, Smile, Zap, Frown, Plus, Info } from 'lucide-react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis } from 'recharts';
+import { useHealthData } from '../hooks/useHealthData';
 
 interface Symptom {
     id: string;
@@ -18,23 +19,52 @@ const predefinedSymptoms: Symptom[] = [
     { id: 'sleep', name: 'Sleep Disturbance', icon: <Smile size={20} /> },
 ];
 
-const mockCorrelation = [
-    { glucose: 4.2, symptomCount: 1, name: 'Normal' },
-    { glucose: 5.8, symptomCount: 0, name: 'Normal' },
-    { glucose: 8.9, symptomCount: 2, name: 'High' },
-    { glucose: 11.2, symptomCount: 4, name: 'Very High' },
-    { glucose: 3.1, symptomCount: 5, name: 'Very Low' },
-];
-
 const SymptomLogger: React.FC = () => {
     const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
     const [severity, setSeverity] = useState(2);
+    const { data: entries, addEntry, loading } = useHealthData('symptom');
+    const { data: glucoseEntries } = useHealthData('glucose');
 
     const toggleSymptom = (id: string) => {
         setSelectedSymptoms(prev =>
             prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
         );
     };
+
+    const handleSave = async () => {
+        if (selectedSymptoms.length === 0) return;
+
+        const symptomNames = selectedSymptoms.map(id => {
+            if (id.startsWith('custom:')) return id.replace('custom:', '');
+            return predefinedSymptoms.find(s => s.id === id)?.name || id;
+        });
+
+        await addEntry({
+            symptoms: selectedSymptoms,
+            severity,
+            names: symptomNames
+        });
+        setSelectedSymptoms([]);
+        setSeverity(2);
+    };
+
+    // Calculate correlation for the chart
+    const correlationData = glucoseEntries.map(g => {
+        const gDate = new Date(g.timestamp);
+        // Find symptoms within 2 hours of this glucose reading
+        const matchingSymptoms = entries.filter(s => {
+            const sDate = new Date(s.timestamp);
+            const diffHours = Math.abs(gDate.getTime() - sDate.getTime()) / (1000 * 60 * 60);
+            return diffHours <= 2;
+        });
+
+        const count = matchingSymptoms.reduce((acc, s) => acc + (s.symptoms?.length || 0), 0);
+        return {
+            glucose: g.value,
+            symptomCount: count,
+            name: g.value > 8.5 ? 'High' : (g.value < 4.0 ? 'Low' : 'Normal')
+        };
+    }).filter(d => d.symptomCount > 0);
 
     return (
         <div className="symptom-logger animate-fade-in">
@@ -60,7 +90,16 @@ const SymptomLogger: React.FC = () => {
                                     <span>{s.name}</span>
                                 </button>
                             ))}
-                            <button className="symptom-btn dashed">
+                            <button
+                                className={`symptom-btn dashed ${selectedSymptoms.includes('other') ? 'active' : ''}`}
+                                onClick={() => {
+                                    const custom = prompt('Enter symptom name:');
+                                    if (custom) {
+                                        // We'll treat 'other' as a flag and store the custom name in a separate field or just push to names
+                                        setSelectedSymptoms(prev => [...prev, `custom:${custom}`]);
+                                    }
+                                }}
+                            >
                                 <div className="icon-box"><Plus size={20} /></div>
                                 <span>Other</span>
                             </button>
@@ -83,29 +122,28 @@ const SymptomLogger: React.FC = () => {
                             </div>
                         </div>
 
-                        <button className="btn btn-primary w-full mt-4">
-                            Log Symptoms
+                        <button className="btn btn-primary w-full mt-4" onClick={handleSave} disabled={loading || selectedSymptoms.length === 0}>
+                            {loading ? 'Logging...' : 'Log Symptoms'}
                         </button>
                     </div>
 
                     <div className="card history-card">
                         <h3>Recent Symptoms</h3>
                         <div className="history-timeline">
-                            <div className="timeline-item">
-                                <div className="timeline-date">Today, 08:30</div>
-                                <div className="timeline-content">
-                                    <span className="badge-symptom">Fatigue</span>
-                                    <span className="badge-symptom">Sweating</span>
-                                    <p className="small text-muted">Moderate severity</p>
+                            {entries.length === 0 && <p className="text-muted small">No logs yet.</p>}
+                            {entries.map((entry) => (
+                                <div key={entry.id} className="timeline-item">
+                                    <div className="timeline-date">
+                                        {new Date(entry.timestamp).toLocaleDateString()} at {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                    <div className="timeline-content">
+                                        {(entry.names || []).map((name: string) => (
+                                            <span key={name} className="badge-symptom">{name}</span>
+                                        ))}
+                                        <p className="small text-muted">{entry.severity === 5 ? 'Severe' : entry.severity >= 3 ? 'Moderate' : 'Mild'} severity</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="timeline-item">
-                                <div className="timeline-date">Yesterday, 19:45</div>
-                                <div className="timeline-content">
-                                    <span className="badge-symptom">Dizziness</span>
-                                    <p className="small text-muted">Mild severity</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -118,36 +156,43 @@ const SymptomLogger: React.FC = () => {
                         </div>
                         <p className="text-muted small mb-4">Visualizing how your glucose level affects your symptoms.</p>
 
-                        <div className="chart-wrapper" style={{ height: '300px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                                    <XAxis
-                                        type="number"
-                                        dataKey="glucose"
-                                        name="Glucose"
-                                        unit=" mmol/L"
-                                        domain={[0, 15]}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    <YAxis
-                                        type="number"
-                                        dataKey="symptomCount"
-                                        name="Symptoms"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        label={{ value: 'Symptom Count', angle: -90, position: 'insideLeft' }}
-                                    />
-                                    <ZAxis type="category" dataKey="name" name="Range" />
-                                    <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                                    <Scatter name="Readings" data={mockCorrelation} fill="var(--blue-primary)">
-                                        {mockCorrelation.map((entry, index) => (
-                                            <circle key={index} cx={0} cy={0} r={6} fill={entry.glucose > 8.5 || entry.glucose < 4.0 ? 'var(--red-primary)' : 'var(--blue-primary)'} />
-                                        ))}
-                                    </Scatter>
-                                </ScatterChart>
-                            </ResponsiveContainer>
+                        <div className="chart-wrapper" style={{ height: '300px', minHeight: '300px' }}>
+                            {correlationData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                                    <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                                        <XAxis
+                                            type="number"
+                                            dataKey="glucose"
+                                            name="Glucose"
+                                            unit=" mmol/L"
+                                            domain={[0, 15]}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+                                        <YAxis
+                                            type="number"
+                                            dataKey="symptomCount"
+                                            name="Symptoms"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            label={{ value: 'Symptom Count', angle: -90, position: 'insideLeft' }}
+                                        />
+                                        <ZAxis type="category" dataKey="name" name="Range" />
+                                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                                        <Scatter name="Readings" data={correlationData} fill="var(--blue-primary)">
+                                            {correlationData.map((entry, index) => (
+                                                <circle key={index} cx={0} cy={0} r={6} fill={entry.glucose > 8.5 || entry.glucose < 4.0 ? 'var(--red-primary)' : 'var(--blue-primary)'} />
+                                            ))}
+                                        </Scatter>
+                                    </ScatterChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-muted border-2 border-dashed border-border rounded-xl p-4 text-center">
+                                    <Info className="mb-2" size={24} />
+                                    <p>Log both glucose and symptoms to see correlation data.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

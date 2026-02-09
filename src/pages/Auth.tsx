@@ -1,22 +1,68 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, Activity, ShieldCheck, Github, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Activity, ShieldCheck, Github, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { auth, googleProvider, githubProvider } from '../config/firebase';
+import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    signInWithPopup,
+    sendPasswordResetEmail
+} from 'firebase/auth';
 
-interface AuthProps {
-    onLogin: () => void;
-}
-
-const Auth: React.FC<AuthProps> = ({ onLogin }) => {
+const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Auth submission:', { email, password, name, type: isLogin ? 'login' : 'signup' });
-        onLogin();
+        setError('');
+        setLoading(true);
+
+        try {
+            if (isLogin) {
+                await signInWithEmailAndPassword(auth, email, password);
+            } else {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                if (name) {
+                    await updateProfile(userCredential.user, { displayName: name });
+                    // Force refresh user to apply displayName
+                    window.location.reload();
+                }
+            }
+        } catch (err: any) {
+            setError(err.message || 'An error occurred during authentication');
+            setLoading(false);
+        }
+    };
+
+    const handleSocialLogin = async (provider: any) => {
+        setError('');
+        setLoading(true);
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (err: any) {
+            setError(err.message || 'Social login failed');
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            setError('Please enter your email address first');
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert('Password reset email sent! Please check your inbox.');
+        } catch (err: any) {
+            setError(err.message || 'Failed to send reset email');
+        }
     };
 
     return (
@@ -51,6 +97,8 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                         </p>
                     </div>
 
+                    {error && <div className="error-message animate-fade-in">{error}</div>}
+
                     <form onSubmit={handleSubmit}>
                         <AnimatePresence mode="wait">
                             {!isLogin && (
@@ -69,7 +117,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                         />
-                                        <User className="input-icon" size={20} />
+                                        <UserIcon className="input-icon" size={20} />
                                     </div>
                                 </motion.div>
                             )}
@@ -102,7 +150,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                         >
                             <div className="label-row">
                                 <label>Password</label>
-                                {isLogin && <a href="#" className="forgot-link">Forgot?</a>}
+                                {isLogin && <button type="button" onClick={handleForgotPassword} className="forgot-link">Forgot?</button>}
                             </div>
                             <div className="input-wrapper">
                                 <input
@@ -131,9 +179,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                             transition={{ duration: 0.3, delay: 0.3 }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            disabled={loading}
                         >
-                            <span>{isLogin ? 'Sign In' : 'Get Started'}</span>
-                            <ArrowRight size={18} />
+                            <span>{loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Get Started')}</span>
+                            {!loading && <ArrowRight size={18} />}
                         </motion.button>
                     </form>
 
@@ -142,8 +191,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                     </div>
 
                     <div className="social-login">
-                        <button className="social-btn"><Github size={20} /> Github</button>
-                        <button className="social-btn">
+                        <button className="social-btn" onClick={() => handleSocialLogin(githubProvider)} disabled={loading}>
+                            <Github size={20} /> Github
+                        </button>
+                        <button className="social-btn" onClick={() => handleSocialLogin(googleProvider)} disabled={loading}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -195,6 +246,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         .form-header { margin-bottom: 32px; }
         .form-header h2 { font-size: 2rem; margin-bottom: 8px; letter-spacing: -0.02em; }
         
+        .error-message {
+          background: var(--red-soft);
+          color: var(--red-primary);
+          padding: 12px;
+          border-radius: var(--radius-sm);
+          font-size: 0.875rem;
+          font-weight: 500;
+          margin-bottom: 20px;
+          border-left: 4px solid var(--red-primary);
+        }
+
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
         

@@ -2,94 +2,99 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, LineChart, Activity, Calculator, User, Menu, X, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { auth } from '../config/firebase';
+import { signOut } from 'firebase/auth';
 
 interface LayoutProps {
-    children: React.ReactNode;
-    onLogout: () => void;
+  children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
-    const location = useLocation();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-    const navItems = [
-        { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
-        { name: 'Glucose', path: '/glucose', icon: <LineChart size={20} /> },
-        { name: 'Symptoms', path: '/symptoms', icon: <Activity size={20} /> },
-        { name: 'Calculator', path: '/calculator', icon: <Calculator size={20} /> },
-        { name: 'Wellness', path: '/wellness', icon: <User size={20} /> },
-    ];
+  const handleLogout = () => {
+    signOut(auth);
+  };
 
-    return (
-        <div className="app-container">
-            {/* Sidebar for Desktop */}
-            <aside className="sidebar glass hidden md:flex">
-                <div className="sidebar-logo">
-                    <Activity className="text-blue-primary" size={32} />
-                    <span>DiabetesCare</span>
-                </div>
-                <nav className="sidebar-nav">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-                        >
-                            {item.icon}
-                            <span>{item.name}</span>
-                        </Link>
-                    ))}
-                    <button onClick={onLogout} className="nav-item logout-btn mt-auto">
-                        <LogOut size={20} />
-                        <span>Logout</span>
-                    </button>
-                </nav>
-            </aside>
+  const navItems = [
+    { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
+    { name: 'Glucose', path: '/glucose', icon: <LineChart size={20} /> },
+    { name: 'Symptoms', path: '/symptoms', icon: <Activity size={20} /> },
+    { name: 'Calculator', path: '/calculator', icon: <Calculator size={20} /> },
+    { name: 'Wellness', path: '/wellness', icon: <User size={20} /> },
+  ];
 
-            {/* Main Content */}
-            <main className="main-content">
-                <header className="header glass md:hidden">
-                    <div className="header-inner">
-                        <Activity className="text-blue-primary" size={24} />
-                        <span className="logo-text">DiabetesCare</span>
-                        <div className="flex gap-2">
-                            <button className="menu-toggle" onClick={onLogout}>
-                                <User size={24} />
-                            </button>
-                            <button className="menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                            </button>
-                        </div>
-                    </div>
-                </header>
+  return (
+    <div className="app-container">
+      {/* Sidebar for Desktop */}
+      <aside className="sidebar glass hidden md:flex">
+        <div className="sidebar-logo">
+          <Activity className="text-blue-primary" size={32} />
+          <span>DiabetesCare</span>
+        </div>
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+            >
+              {item.icon}
+              <span>{item.name}</span>
+            </Link>
+          ))}
+          <button onClick={handleLogout} className="nav-item logout-btn mt-auto">
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </nav>
+      </aside>
 
-                <section className="content-area">
-                    <motion.div
-                        key={location.pathname}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {children}
-                    </motion.div>
-                </section>
-            </main>
+      {/* Main Content */}
+      <main className="main-content">
+        <header className="header glass md:hidden">
+          <div className="header-inner">
+            <Activity className="text-blue-primary" size={24} />
+            <span className="logo-text">DiabetesCare</span>
+            <div className="flex gap-2">
+              <button className="menu-toggle" onClick={handleLogout}>
+                <LogOut size={24} />
+              </button>
+              <button className="menu-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
+        </header>
 
-            {/* Bottom Navigation for Mobile */}
-            <nav className="bottom-nav glass md:hidden">
-                {navItems.map((item) => (
-                    <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`bottom-nav-item ${location.pathname === item.path ? 'active' : ''}`}
-                    >
-                        {item.icon}
-                        <span className="text-[10px]">{item.name}</span>
-                    </Link>
-                ))}
-            </nav>
+        <section className="content-area">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {children}
+          </motion.div>
+        </section>
+      </main>
 
-            <style>{`
+      {/* Bottom Navigation for Mobile */}
+      <nav className="bottom-nav glass md:hidden">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`bottom-nav-item ${location.pathname === item.path ? 'active' : ''}`}
+          >
+            {item.icon}
+            <span className="text-[10px]">{item.name}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <style>{`
         .app-container {
           display: flex;
           min-height: 100vh;
@@ -148,7 +153,7 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
           box-shadow: 0 4px 12px hsla(200, 85%, 60%, 0.3);
         }
 
-        .logout-btn { background: none; border: none; width: 100%; cursor: pointer; }
+        .logout-btn { background: none; border: none; width: 100%; cursor: pointer; text-align: left; }
         .logout-btn:hover { color: var(--red-primary) !important; background: var(--red-soft) !important; }
 
         .mt-auto { margin-top: auto; }
@@ -243,8 +248,8 @@ const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
           .md\\:hidden { display: none; }
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default Layout;

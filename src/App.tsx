@@ -6,16 +6,35 @@ import SymptomLogger from './pages/SymptomLogger';
 import InsulinCalculator from './pages/InsulinCalculator';
 import Wellness from './pages/Wellness';
 import Auth from './pages/Auth';
-import { useState } from 'react';
+import { auth } from './config/firebase';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { useState, useEffect } from 'react';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!isAuthenticated) {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <Router>
         <Routes>
-          <Route path="*" element={<Auth onLogin={() => setIsAuthenticated(true)} />} />
+          <Route path="*" element={<Auth />} />
         </Routes>
       </Router>
     );
@@ -23,7 +42,7 @@ function App() {
 
   return (
     <Router>
-      <Layout onLogout={() => setIsAuthenticated(false)}>
+      <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/glucose" element={<GlucoseTracker />} />

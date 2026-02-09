@@ -1,36 +1,20 @@
 import React, { useState } from 'react';
 import { Droplets, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-
-interface GlucoseEntry {
-    id: string;
-    value: number;
-    type: string;
-    timestamp: string;
-    notes?: string;
-}
-
-const mockHistory: GlucoseEntry[] = [
-    { id: '1', value: 5.4, type: 'Before Meal', timestamp: '2026-02-09T08:00:00' },
-    { id: '2', value: 7.8, type: 'After Meal', timestamp: '2026-02-09T12:30:00' },
-    { id: '3', value: 6.2, type: 'Before Sleep', timestamp: '2026-02-08T23:00:00' },
-    { id: '4', value: 4.1, type: 'Fast', timestamp: '2026-02-08T07:15:00' },
-];
+import { useHealthData } from '../hooks/useHealthData';
 
 const GlucoseTracker: React.FC = () => {
     const [level, setLevel] = useState<string>('');
-    const [type, setType] = useState<string>('Before Meal');
-    const [entries, setEntries] = useState<GlucoseEntry[]>(mockHistory);
+    const [type, setType] = useState<string>('Fasting');
+    const { data: entries, addEntry, loading } = useHealthData('glucose');
 
-    const handleAddEntry = () => {
+    const handleAddEntry = async () => {
         if (!level) return;
-        const newEntry: GlucoseEntry = {
-            id: Date.now().toString(),
+        await addEntry({
             value: parseFloat(level),
             type,
-            timestamp: new Date().toISOString(),
-        };
-        setEntries([newEntry, ...entries]);
+            notes: ''
+        });
         setLevel('');
     };
 
@@ -68,11 +52,12 @@ const GlucoseTracker: React.FC = () => {
                         <div className="form-group">
                             <label>Time Period</label>
                             <div className="type-chips">
-                                {['Fast', 'Before Meal', 'After Meal', 'Before Sleep'].map((t) => (
+                                {['Fasting', 'Before Meal', 'After Meal', 'Bedtime'].map((t) => (
                                     <button
                                         key={t}
                                         className={`chip ${type === t ? 'active' : ''}`}
                                         onClick={() => setType(t)}
+                                        type="button"
                                     >
                                         {t}
                                     </button>
@@ -80,8 +65,8 @@ const GlucoseTracker: React.FC = () => {
                             </div>
                         </div>
 
-                        <button className="btn btn-primary w-full" onClick={handleAddEntry}>
-                            Save Reading
+                        <button className="btn btn-primary w-full" onClick={handleAddEntry} disabled={!level || loading}>
+                            {loading ? 'Saving...' : 'Save Reading'}
                         </button>
                     </div>
 
@@ -114,32 +99,38 @@ const GlucoseTracker: React.FC = () => {
                                 <option>Last 30 Days</option>
                             </select>
                         </div>
-                        <div className="chart-wrapper" style={{ height: '350px', marginTop: '30px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={[...entries].reverse()}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                                    <XAxis
-                                        dataKey="timestamp"
-                                        tickFormatter={(str) => new Date(str).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        axisLine={false}
-                                        tickLine={false}
-                                    />
-                                    <YAxis axisLine={false} tickLine={false} domain={[0, 15]} />
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                    />
-                                    <ReferenceLine y={4} stroke="var(--green-primary)" strokeDasharray="3 3" />
-                                    <ReferenceLine y={8.5} stroke="var(--yellow-primary)" strokeDasharray="3 3" />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="var(--blue-primary)"
-                                        strokeWidth={4}
-                                        dot={{ r: 6, fill: 'var(--blue-primary)', strokeWidth: 2, stroke: '#fff' }}
-                                        activeDot={{ r: 8 }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                        <div className="chart-wrapper" style={{ height: '350px', marginTop: '30px', minHeight: '350px' }}>
+                            {entries.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                                    <LineChart data={[...entries].reverse()}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                                        <XAxis
+                                            dataKey="timestamp"
+                                            tickFormatter={(str) => new Date(str).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            axisLine={false}
+                                            tickLine={false}
+                                        />
+                                        <YAxis axisLine={false} tickLine={false} domain={[0, 15]} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                        />
+                                        <ReferenceLine y={4} stroke="var(--green-primary)" strokeDasharray="3 3" />
+                                        <ReferenceLine y={8.5} stroke="var(--yellow-primary)" strokeDasharray="3 3" />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="value"
+                                            stroke="var(--blue-primary)"
+                                            strokeWidth={4}
+                                            dot={{ r: 6, fill: 'var(--blue-primary)', strokeWidth: 2, stroke: '#fff' }}
+                                            activeDot={{ r: 8 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-muted border-2 border-dashed border-border rounded-xl">
+                                    No readings logged yet
+                                </div>
+                            )}
                         </div>
                     </div>
 

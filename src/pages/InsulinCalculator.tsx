@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Calculator, Utensils, Zap, History, Trash2, ArrowRight, Info } from 'lucide-react';
-
-interface MealEntry {
-    id: string;
-    name: string;
-    carbs: number;
-    xe: number;
-    insulin: number;
-    timestamp: string;
-}
+import { Calculator, Utensils, Zap, History, ArrowRight, Info } from 'lucide-react';
+import { useHealthData } from '../hooks/useHealthData';
 
 const InsulinCalculator: React.FC = () => {
     const [foodName, setFoodName] = useState('');
@@ -19,7 +11,7 @@ const InsulinCalculator: React.FC = () => {
 
     const [calculatedXe, setCalculatedXe] = useState(0);
     const [totalInsulin, setTotalInsulin] = useState(0);
-    const [history, setHistory] = useState<MealEntry[]>([]);
+    const { data: entries, addEntry, loading } = useHealthData('meal');
 
     // Automatic Calculation
     useEffect(() => {
@@ -31,17 +23,16 @@ const InsulinCalculator: React.FC = () => {
         setTotalInsulin(xe * iPerXe);
     }, [carbs, xeFactor, insulinPerXe]);
 
-    const handleSaveMeal = () => {
+    const handleSaveMeal = async () => {
         if (!foodName || !carbs) return;
-        const newEntry: MealEntry = {
-            id: Date.now().toString(),
+        await addEntry({
             name: foodName,
             carbs: parseFloat(carbs),
             xe: calculatedXe,
             insulin: totalInsulin,
-            timestamp: new Date().toISOString(),
-        };
-        setHistory([newEntry, ...history]);
+            insulinPerXe: parseFloat(insulinPerXe),
+            xeFactor
+        });
         setFoodName('');
         setCarbs('');
     };
@@ -114,8 +105,8 @@ const InsulinCalculator: React.FC = () => {
                             </div>
                         </div>
 
-                        <button className="btn btn-primary w-full mt-4" onClick={handleSaveMeal}>
-                            Log Meal & Dosage
+                        <button className="btn btn-primary w-full mt-4" onClick={handleSaveMeal} disabled={loading || !foodName || !carbs}>
+                            {loading ? 'Logging...' : 'Log Meal & Dosage'}
                         </button>
                     </div>
 
@@ -153,26 +144,23 @@ const InsulinCalculator: React.FC = () => {
                             <History size={18} className="text-muted" />
                         </div>
 
-                        {history.length === 0 ? (
+                        {entries.length === 0 ? (
                             <div className="empty-state">
                                 <Utensils size={40} className="text-muted" />
                                 <p>No meals logged yet</p>
                             </div>
                         ) : (
                             <div className="history-list">
-                                {history.map((item) => (
+                                {entries.map((item) => (
                                     <div key={item.id} className="meal-item">
                                         <div className="meal-info">
                                             <span className="meal-name">{item.name}</span>
-                                            <span className="meal-meta">{item.carbs}g Carbs • {item.xe.toFixed(1)} XE</span>
+                                            <span className="meal-meta">{item.carbs}g Carbs • {item.xe?.toFixed(1)} XE</span>
                                         </div>
                                         <div className="meal-dosage">
-                                            <span className="dosage-val">{item.insulin.toFixed(1)}</span>
+                                            <span className="dosage-val">{item.insulin?.toFixed(1)}</span>
                                             <span className="dosage-unit">Units</span>
                                         </div>
-                                        <button className="delete-btn" onClick={() => setHistory(history.filter(h => h.id !== item.id))}>
-                                            <Trash2 size={16} />
-                                        </button>
                                     </div>
                                 ))}
                             </div>
