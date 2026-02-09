@@ -3,6 +3,7 @@ import { ShieldAlert, X, Phone, Activity, Droplets, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface MedicalID {
     diabetesType: string;
@@ -12,6 +13,7 @@ interface MedicalID {
 }
 
 const SOSModal: React.FC = () => {
+    const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const [medicalID, setMedicalID] = useState<MedicalID | null>(null);
     const [lastReading, setLastReading] = useState<string | null>(null);
@@ -54,8 +56,8 @@ const SOSModal: React.FC = () => {
                                     <ShieldAlert size={48} />
                                 </div>
                                 <div className="space-y-1">
-                                    <h2 className="text-3xl font-black uppercase font-outfit tracking-tighter">Emergency Medical ID</h2>
-                                    <p className="text-red-100 font-medium text-sm">Vital instructions for first responders</p>
+                                    <h2 className="text-3xl font-black uppercase font-outfit tracking-tighter">{t('emergency_id')}</h2>
+                                    <p className="text-red-100 font-medium text-sm">{t('responder_instructions')}</p>
                                 </div>
                             </div>
                         </CardHeader>
@@ -64,12 +66,12 @@ const SOSModal: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-6 rounded-[32px] bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex flex-col items-center gap-2">
                                     <Activity className="text-red-600 dark:text-red-400" size={24} />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Condition</span>
-                                    <span className="text-lg font-black text-red-600 dark:text-red-400 font-outfit uppercase">{medicalID?.diabetesType || 'Diabetes Type 1'}</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">{t('condition')}</span>
+                                    <span className="text-lg font-black text-red-600 dark:text-red-400 font-outfit uppercase">{medicalID?.diabetesType || t('diabetes_type_1') || 'Diabetes Type 1'}</span>
                                 </div>
                                 <div className="p-6 rounded-[32px] bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex flex-col items-center gap-2">
                                     <Droplets className="text-red-600 dark:text-red-400" size={24} />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Blood Group</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">{t('blood_group_label') || t('blood_group')}</span>
                                     <span className="text-lg font-black text-red-600 dark:text-red-400 font-outfit uppercase">{medicalID?.bloodType || 'B+ Positive'}</span>
                                 </div>
                             </div>
@@ -80,8 +82,8 @@ const SOSModal: React.FC = () => {
                                         <Activity size={20} />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Glycemic Data</p>
-                                        <p className="text-xl font-black text-slate-900 dark:text-white font-outfit">{lastReading || 'Stable (Estimated)'}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('recent_glycemic_data')}</p>
+                                        <p className="text-xl font-black text-slate-900 dark:text-white font-outfit">{lastReading || t('stability') || 'Stable (Estimated)'}</p>
                                     </div>
                                 </div>
                                 <div className="h-px bg-slate-100 dark:bg-slate-700 w-full" />
@@ -90,7 +92,7 @@ const SOSModal: React.FC = () => {
                                         <Phone size={20} />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Emergency Contact</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('emergency_contact')}</p>
                                         <p className="text-xl font-black text-slate-900 dark:text-white font-outfit">{medicalID?.emergencyContact || '+1 (234) 567-890'}</p>
                                     </div>
                                 </div>
@@ -99,10 +101,10 @@ const SOSModal: React.FC = () => {
                             <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
                                     <Info size={14} />
-                                    Therapeutic Notes
+                                    {t('therapeutic_notes')}
                                 </p>
                                 <p className="text-sm font-medium text-slate-600 dark:text-slate-300 italic leading-relaxed">
-                                    {medicalID?.notes || "Patient may require rapid-acting glucose or insulin depending on state. Check sensor for continuous monitoring."}
+                                    {medicalID?.notes || t('default_notes')}
                                 </p>
                             </div>
 
@@ -110,7 +112,7 @@ const SOSModal: React.FC = () => {
                                 className="w-full h-18 rounded-3xl bg-slate-900 text-white font-black uppercase tracking-tighter"
                                 onClick={() => setIsOpen(false)}
                             >
-                                Acknowledge & Return
+                                {t('acknowledge_return')}
                             </Button>
                         </CardContent>
                     </Card>

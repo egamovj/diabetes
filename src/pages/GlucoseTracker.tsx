@@ -8,16 +8,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useLanguage } from '../contexts/LanguageContext';
+import { useUnit } from '../contexts/UnitContext';
 
 const GlucoseTracker: React.FC = () => {
     const [level, setLevel] = useState<string>('');
     const [type, setType] = useState<string>('Fasting');
     const { data: entries, addEntry, loading } = useHealthData('glucose');
+    const { t } = useLanguage();
+    const { unit, convert } = useUnit();
 
     const handleAddEntry = async () => {
         if (!level) return;
+        const val = parseFloat(level);
+        // If unit is mg/dL, convert to mmol/L for internal storage
+        const storedValue = unit === 'mg/dL' ? parseFloat((val / 18.0182).toFixed(1)) : val;
+
         await addEntry({
-            value: parseFloat(level),
+            value: storedValue,
             type,
             notes: ''
         });
@@ -25,9 +33,9 @@ const GlucoseTracker: React.FC = () => {
     };
 
     const getStatus = (val: number) => {
-        if (val < 4.0) return { label: 'Low', color: 'text-red-600', bgColor: 'bg-red-50', icon: <AlertCircle size={16} /> };
-        if (val > 8.5) return { label: 'High', color: 'text-amber-600', bgColor: 'bg-amber-50', icon: <Info size={16} /> };
-        return { label: 'Normal', color: 'text-emerald-600', bgColor: 'bg-emerald-50', icon: <CheckCircle2 size={16} /> };
+        if (val < 4.0) return { label: t('sos'), color: 'text-red-600', bgColor: 'bg-red-50', icon: <AlertCircle size={16} /> };
+        if (val > 8.5) return { label: t('elevated_projection'), color: 'text-amber-600', bgColor: 'bg-amber-50', icon: <Info size={16} /> };
+        return { label: t('equilibrum'), color: 'text-emerald-600', bgColor: 'bg-emerald-50', icon: <CheckCircle2 size={16} /> };
     };
 
     return (
@@ -44,7 +52,7 @@ const GlucoseTracker: React.FC = () => {
                 <h1 className="text-5xl font-black tracking-tight text-slate-900 font-outfit uppercase leading-none drop-shadow-sm">
                     Blood <span className="text-emerald-600">Glucose</span>
                 </h1>
-                <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
+                <p className="text-slate-500 dark:text-slate-400 text-xl font-medium max-w-2xl leading-relaxed">
                     Analyzing glucose fluctuations for precise metabolic regulation.
                 </p>
             </header>
@@ -72,7 +80,7 @@ const GlucoseTracker: React.FC = () => {
                         </CardHeader>
                         <CardContent className="-mt-10 bg-white/80 backdrop-blur-md rounded-t-[48px] pt-12 px-8 pb-8 space-y-8 relative z-10 border-t border-emerald-100/50">
                             <div className="space-y-3">
-                                <Label htmlFor="level" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">Glucose Level (mmol/L)</Label>
+                                <Label htmlFor="level" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">{t('latest_glucose')} ({unit})</Label>
                                 <div className="relative group/input">
                                     <Input
                                         id="level"
@@ -162,9 +170,9 @@ const GlucoseTracker: React.FC = () => {
                             <div className="space-y-1">
                                 <CardTitle className="text-3xl font-black flex items-center gap-3 uppercase tracking-tighter">
                                     <TrendingUp className="text-emerald-600" size={32} />
-                                    Metric Trends
+                                    {t('glucose_trends')}
                                 </CardTitle>
-                                <CardDescription className="text-slate-400 font-medium">Temporal analysis of glycemic variations</CardDescription>
+                                <CardDescription className="text-slate-400 font-medium">{t('metabolic_projection')}</CardDescription>
                             </div>
                             <select className="h-10 px-4 text-[10px] font-black uppercase tracking-widest border-slate-100 border-2 rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-50 bg-white transition-all cursor-pointer">
                                 <option>Last 7 Days</option>
@@ -174,7 +182,7 @@ const GlucoseTracker: React.FC = () => {
                         <CardContent className="h-[450px] mt-6 px-10 pb-10">
                             {entries.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={[...entries].reverse()}>
+                                    <LineChart data={[...entries].reverse().map(e => ({ ...e, displayValue: convert(e.value) }))}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                         <XAxis
                                             dataKey="timestamp"
@@ -188,7 +196,7 @@ const GlucoseTracker: React.FC = () => {
                                             axisLine={false}
                                             tickLine={false}
                                             tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }}
-                                            domain={[0, 15]}
+                                            domain={[0, unit === 'mg/dL' ? 300 : 15]}
                                             dx={-20}
                                         />
                                         <Tooltip
@@ -205,7 +213,7 @@ const GlucoseTracker: React.FC = () => {
                                         <ReferenceLine y={8.5} stroke="#f59e0b" strokeDasharray="8 8" strokeWidth={2} opacity={0.3} />
                                         <Line
                                             type="monotone"
-                                            dataKey="value"
+                                            dataKey="displayValue"
                                             stroke="#059669"
                                             strokeWidth={6}
                                             dot={{ r: 8, fill: '#059669', strokeWidth: 4, stroke: '#fff' }}
@@ -255,11 +263,11 @@ const GlucoseTracker: React.FC = () => {
                                                 <div className="flex-1 p-6 flex items-center justify-between">
                                                     <div className="flex items-center gap-5">
                                                         <div className={cn(
-                                                            "h-16 w-16 rounded-[22px] flex items-center justify-center text-2xl font-black font-outfit shadow-inner",
+                                                            "h-16 w-16 rounded-[22px] flex items-center justify-center text-2xl font-black font-outfit shadow-inner px-2 text-center",
                                                             status.bgColor,
                                                             status.color
                                                         )}>
-                                                            {entry.value}
+                                                            {convert(entry.value)}
                                                         </div>
                                                         <div className="space-y-1.5">
                                                             <div className="flex items-center gap-3">

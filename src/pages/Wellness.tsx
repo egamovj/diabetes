@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Wellness: React.FC = () => {
+    const { t } = useLanguage();
     const [weight, setWeight] = useState('');
     const [sleep, setSleep] = useState('');
     const [water, setWater] = useState('');
@@ -35,13 +37,13 @@ const Wellness: React.FC = () => {
             <header className="flex flex-col gap-3 relative">
                 <div className="flex items-center gap-3">
                     <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-bold uppercase tracking-widest text-[10px] px-3">Vital Systems</Badge>
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-bold uppercase tracking-widest text-[10px] px-3">{t('vital_systems')}</Badge>
                 </div>
                 <h1 className="text-5xl font-black tracking-tight text-slate-900 font-outfit uppercase leading-none drop-shadow-sm">
-                    Wellness <span className="text-emerald-600">&</span> Vitals
+                    {t('wellness')} <span className="text-emerald-600">&</span> {t('vitals')}
                 </h1>
                 <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
-                    A holistic overview of your physical health markers, synchronized for a balanced lifestyle.
+                    {t('holistic_overview')}
                 </p>
             </header>
 
@@ -58,14 +60,14 @@ const Wellness: React.FC = () => {
                             <div className="flex items-center justify-between relative z-10">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Badge className="bg-white/20 hover:bg-white/30 backdrop-blur-md border-none text-white text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter">Daily Ledger</Badge>
+                                        <Badge className="bg-white/20 hover:bg-white/30 backdrop-blur-md border-none text-white text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter">{t('daily_ledger')}</Badge>
                                     </div>
                                     <CardTitle className="text-3xl font-black flex items-center gap-3 font-outfit">
                                         <TrendingUp size={32} />
-                                        Health Check-in
+                                        {t('health_checkin')}
                                     </CardTitle>
                                     <CardDescription className="text-emerald-100 text-base font-medium opacity-90">
-                                        Update your vitals to maintain accurate health projections.
+                                        {t('update_vitals_tip')}
                                     </CardDescription>
                                 </div>
                                 <div className="h-16 w-16 rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl animate-bounce-slow">
@@ -77,7 +79,7 @@ const Wellness: React.FC = () => {
                         <CardContent className="-mt-10 bg-white/80 backdrop-blur-md rounded-t-[48px] pt-12 px-10 pb-10 space-y-10 transition-all relative z-10 border-t border-emerald-100/50 shadow-[0_-12px_40px_-12px_rgba(16,185,129,0.05)]">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="space-y-3">
-                                    <Label htmlFor="weight" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">Body Weight</Label>
+                                    <Label htmlFor="weight" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">{t('body_weight')}</Label>
                                     <div className="relative group/input">
                                         <Input
                                             id="weight"
@@ -90,12 +92,12 @@ const Wellness: React.FC = () => {
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-focus-within/input:bg-emerald-600 group-focus-within/input:text-white transition-all">
                                             <Scale size={18} />
                                         </div>
-                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase tracking-tighter">kg</span>
+                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase tracking-tighter">{t('kg')}</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="sleep" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">Rest Duration</Label>
+                                    <Label htmlFor="sleep" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">{t('rest_duration')}</Label>
                                     <div className="relative group/input">
                                         <Input
                                             id="sleep"
@@ -108,12 +110,12 @@ const Wellness: React.FC = () => {
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-focus-within/input:bg-indigo-600 group-focus-within/input:text-white transition-all">
                                             <Moon size={18} />
                                         </div>
-                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase tracking-tighter">hrs</span>
+                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase tracking-tighter">{t('hrs')}</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Label htmlFor="water" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">Hydration Level</Label>
+                                    <Label htmlFor="water" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">{t('hydration_level')}</Label>
                                     <div className="relative group/input">
                                         <Input
                                             id="water"
@@ -127,7 +129,7 @@ const Wellness: React.FC = () => {
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-focus-within/input:bg-blue-600 group-focus-within/input:text-white transition-all">
                                             <Droplets size={18} />
                                         </div>
-                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase tracking-tighter">liters</span>
+                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase tracking-tighter">{t('liters')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -138,7 +140,7 @@ const Wellness: React.FC = () => {
                                 disabled={loading}
                             >
                                 <span className="relative z-10 flex items-center gap-3 italic">
-                                    {loading ? 'Synchronizing Health Profile...' : 'Finalize Daily Entry'}
+                                    {loading ? t('sync_profile') : t('finalize_daily_entry')}
                                     <Activity size={24} className="animate-pulse" />
                                 </span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
@@ -152,8 +154,8 @@ const Wellness: React.FC = () => {
                                 <Moon size={28} />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Medical Focus</p>
-                                <p className="text-base font-bold text-slate-800 leading-tight">"Sleep optimizes glucose metabolism by up to 40%."</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('medical_focus')}</p>
+                                <p className="text-base font-bold text-slate-800 leading-tight">{t('sleep_glucose_insight')}</p>
                             </div>
                         </Card>
                         <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.04)] bg-white/40 backdrop-blur-xl border border-white/60 p-8 rounded-[36px] flex items-center gap-6 group hover:bg-white/60 transition-all hover:-translate-y-1">
@@ -161,8 +163,8 @@ const Wellness: React.FC = () => {
                                 <Droplets size={28} />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Scientific Tip</p>
-                                <p className="text-base font-bold text-slate-800 leading-tight">"Consistent hydration prevents rapid cortisol spikes."</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('scientific_tip')}</p>
+                                <p className="text-base font-bold text-slate-800 leading-tight">{t('hydration_cortisol_insight')}</p>
                             </div>
                         </Card>
                     </div>
@@ -177,13 +179,13 @@ const Wellness: React.FC = () => {
                                     <History size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Vitals Archive</h3>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Historical Performance</p>
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">{t('vitals_archive')}</h3>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('historical_perf')}</p>
                                 </div>
                             </div>
                             {entries.length > 0 && (
                                 <Badge className="bg-emerald-600 text-white border-none text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-lg shadow-emerald-200">
-                                    {entries.length} Logs
+                                    {entries.length} {t('logs_count')}
                                 </Badge>
                             )}
                         </div>
@@ -195,8 +197,8 @@ const Wellness: React.FC = () => {
                                         <Activity size={40} className="text-slate-200" />
                                     </div>
                                     <div className="space-y-2">
-                                        <p className="text-slate-500 font-black uppercase text-xs tracking-[0.3em]">No Data Synced</p>
-                                        <p className="text-slate-400 text-sm font-medium italic">Begin your journey by logging today's markers.</p>
+                                        <p className="text-slate-500 font-black uppercase text-xs tracking-[0.3em]">{t('no_data_synced')}</p>
+                                        <p className="text-slate-400 text-sm font-medium italic">{t('begin_journey_tip')}</p>
                                     </div>
                                 </div>
                             ) : (
@@ -217,16 +219,16 @@ const Wellness: React.FC = () => {
 
                                                         <div className="flex items-center justify-between gap-4">
                                                             <div className="flex flex-col bg-emerald-50/50 p-2 px-4 rounded-2xl flex-1 border border-emerald-100/30">
-                                                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1 opacity-70">Weight</span>
-                                                                <span className="text-2xl font-black text-slate-800 font-outfit leading-none">{entry.weight}<small className="text-[10px] ml-1 text-slate-400 font-bold uppercase">KG</small></span>
+                                                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1 opacity-70">{t('weight')}</span>
+                                                                <span className="text-2xl font-black text-slate-800 font-outfit leading-none">{entry.weight}<small className="text-[10px] ml-1 text-slate-400 font-bold uppercase">{t('kg')}</small></span>
                                                             </div>
                                                             <div className="flex flex-col bg-indigo-50/50 p-2 px-4 rounded-2xl flex-1 border border-indigo-100/30">
-                                                                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-1 opacity-70">Sleep</span>
-                                                                <span className="text-2xl font-black text-slate-800 font-outfit leading-none">{entry.sleep}<small className="text-[10px] ml-1 text-slate-400 font-bold uppercase">HRS</small></span>
+                                                                <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-1 opacity-70">{t('sleep')}</span>
+                                                                <span className="text-2xl font-black text-slate-800 font-outfit leading-none">{entry.sleep}<small className="text-[10px] ml-1 text-slate-400 font-bold uppercase">{t('hrs')}</small></span>
                                                             </div>
                                                             <div className="flex flex-col bg-blue-50/50 p-2 px-4 rounded-2xl flex-1 border border-blue-100/30">
-                                                                <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1 opacity-70">Water</span>
-                                                                <span className="text-2xl font-black text-slate-800 font-outfit leading-none">{entry.water}<small className="text-[10px] ml-1 text-slate-400 font-bold uppercase">L</small></span>
+                                                                <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1 opacity-70">{t('water')}</span>
+                                                                <span className="text-2xl font-black text-slate-800 font-outfit leading-none">{entry.water}<small className="text-[10px] ml-1 text-slate-400 font-bold uppercase">{t('liters_short')}</small></span>
                                                             </div>
                                                         </div>
                                                     </div>

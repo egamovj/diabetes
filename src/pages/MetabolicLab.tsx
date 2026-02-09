@@ -10,8 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { calculateTIR, correlateMealData } from '../utils/metabolic';
 import { cn } from "@/lib/utils";
+import { useLanguage } from '../contexts/LanguageContext';
 
 const MetabolicLab: React.FC = () => {
+    const { t } = useLanguage();
     const { data: glucoseEntries } = useHealthData('glucose');
     const { data: mealEntries } = useHealthData('meal');
     const { data: symptomEntries } = useHealthData('symptom');
@@ -21,9 +23,9 @@ const MetabolicLab: React.FC = () => {
     const correlations = correlateMealData(mealEntries, glucoseEntries);
 
     const pieData = [
-        { name: 'Low (< 4.0)', value: tir.low, color: '#ef4444' },
-        { name: 'In Range (4.0-8.5)', value: tir.inRange, color: '#10b981' },
-        { name: 'High (> 8.5)', value: tir.high, color: '#f59e0b' },
+        { name: t('tir_low'), value: tir.low, color: '#ef4444' },
+        { name: t('tir_in_range'), value: tir.inRange, color: '#10b981' },
+        { name: t('tir_high'), value: tir.high, color: '#f59e0b' },
     ].filter(d => d.value > 0);
 
     const symptomLabels = symptomEntries.reduce((acc, s) => {
@@ -47,13 +49,13 @@ const MetabolicLab: React.FC = () => {
             <header className="flex flex-col gap-3 relative">
                 <div className="flex items-center gap-3">
                     <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold uppercase tracking-widest text-[10px] px-3">Advanced Clinical Insights</Badge>
+                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold uppercase tracking-widest text-[10px] px-3">{t('clinical_insights')}</Badge>
                 </div>
                 <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-white font-outfit uppercase leading-none drop-shadow-sm">
-                    Metabolic <span className="text-emerald-600">Lab</span>
+                    {t('medical_lab').split(' ')[0]} <span className="text-emerald-600">{t('medical_lab').split(' ')[1] || 'Lab'}</span>
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-xl font-medium max-w-2xl leading-relaxed">
-                    Correlative deep-dives into your biological metadata for precise therapy adjustment.
+                    {t('clinical_deep_dive')}
                 </p>
             </header>
 
@@ -65,9 +67,9 @@ const MetabolicLab: React.FC = () => {
                             <PieChart size={140} strokeWidth={1} />
                         </div>
                         <div className="relative z-10 space-y-2">
-                            <Badge className="bg-white/20 text-white border-none text-[9px] font-black uppercase tracking-widest px-2">Clinical Stability</Badge>
-                            <CardTitle className="text-3xl font-black font-outfit uppercase">Time In Range</CardTitle>
-                            <CardDescription className="text-emerald-50 opacity-80">Primary metric for metabolic control quality</CardDescription>
+                            <Badge className="bg-white/20 text-white border-none text-[9px] font-black uppercase tracking-widest px-2">{t('clinical_stability')}</Badge>
+                            <CardTitle className="text-3xl font-black font-outfit uppercase">{t('time_in_range') || 'Time In Range'}</CardTitle>
+                            <CardDescription className="text-emerald-50 opacity-80">{t('tir_gold_standard')}</CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent className="-mt-10 bg-white dark:bg-slate-900 rounded-t-[48px] p-10 space-y-10 relative z-10 border-t border-white/10 dark:border-slate-800">
@@ -94,20 +96,20 @@ const MetabolicLab: React.FC = () => {
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-700">
                                     <PieChart size={48} className="mb-4 opacity-20" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Logs</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest">{t('awaiting_calibration').split('...')[0]}</p>
                                 </div>
                             )}
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-5xl font-black text-emerald-600 dark:text-emerald-400 font-outfit">{tir.inRange}%</span>
-                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Target Met</span>
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t('target_met')}</span>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-4">
                             {[
-                                { label: 'LOW', val: tir.low, color: 'bg-red-500' },
-                                { label: 'IN RANGE', val: tir.inRange, color: 'bg-emerald-500' },
-                                { label: 'HIGH', val: tir.high, color: 'bg-amber-500' },
+                                { label: t('tir_low').split(' ')[0], val: tir.low, color: 'bg-red-500' },
+                                { label: t('tir_in_range').split(' (')[0], val: tir.inRange, color: 'bg-emerald-500' },
+                                { label: t('tir_high').split(' ')[0], val: tir.high, color: 'bg-amber-500' },
                             ].map(item => (
                                 <div key={item.label} className="p-4 rounded-3xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-2">
                                     <div className={cn("h-1.5 w-8 rounded-full", item.color)}></div>
@@ -125,9 +127,9 @@ const MetabolicLab: React.FC = () => {
                         <div className="space-y-1">
                             <CardTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tighter dark:text-white">
                                 <Utensils className="text-emerald-500" size={28} />
-                                Trigger Analysis
+                                {t('trigger_analysis')}
                             </CardTitle>
-                            <CardDescription className="text-slate-400 dark:text-slate-500">Post-prandial glycemic response correlation</CardDescription>
+                            <CardDescription className="text-slate-400 dark:text-slate-500">{t('post_prandial_desc')}</CardDescription>
                         </div>
                         <AlertCircle className="text-slate-200 dark:text-slate-700" size={24} />
                     </CardHeader>
@@ -164,7 +166,7 @@ const MetabolicLab: React.FC = () => {
                                         strokeWidth={4}
                                         fillOpacity={1}
                                         fill="url(#colorGlucose)"
-                                        name="Post-Meal Glucose"
+                                        name={t('post_meal_glucose')}
                                     />
                                     <Area
                                         type="monotone"
@@ -173,15 +175,15 @@ const MetabolicLab: React.FC = () => {
                                         strokeWidth={4}
                                         fillOpacity={0.1}
                                         fill="#6366f1"
-                                        name="Carb Load (g)"
+                                        name={t('carb_load_g')}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-slate-300 dark:text-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-[32px] border-4 border-dashed border-slate-100 dark:border-slate-800">
                                 <Activity size={48} className="mb-4 opacity-20" />
-                                <p className="text-[10px] font-black uppercase tracking-widest">Cross-referencing Meal/Glucose Datasets...</p>
-                                <p className="text-[10px] mt-2 font-medium italic opacity-60">Requires meal logs followed by glucose checks within 2 hours.</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest">{t('awaiting_cross_analysis')}</p>
+                                <p className="text-[10px] mt-2 font-medium italic opacity-60">{t('meal_glucose_data_req')}</p>
                             </div>
                         )}
                     </CardContent>
@@ -192,10 +194,10 @@ const MetabolicLab: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-8">
                             <div className="space-y-2">
-                                <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[9px] font-black uppercase tracking-widest px-3">Subjective distribution</Badge>
-                                <h3 className="text-3xl font-black font-outfit uppercase">Symptom Frequency</h3>
+                                <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[9px] font-black uppercase tracking-widest px-3">{t('subjective_distribution')}</Badge>
+                                <h3 className="text-3xl font-black font-outfit uppercase">{t('symptom_frequency')}</h3>
                                 <p className="text-slate-400 text-lg font-medium leading-relaxed">
-                                    Top biological triggers detected across your therapeutic journey.
+                                    {t('top_biological_triggers')}
                                 </p>
                             </div>
 
@@ -204,7 +206,7 @@ const MetabolicLab: React.FC = () => {
                                     <div key={s.name} className="space-y-2">
                                         <div className="flex justify-between items-end">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{s.name}</span>
-                                            <span className="text-sm font-black text-emerald-400">{s.count} Logs</span>
+                                            <span className="text-sm font-black text-emerald-400">{s.count} {t('logs_count')}</span>
                                         </div>
                                         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                                             <div
@@ -215,7 +217,7 @@ const MetabolicLab: React.FC = () => {
                                     </div>
                                 ))}
                                 {symptomDist.length === 0 && (
-                                    <p className="text-slate-500 italic text-sm">Waiting for biometric feedback logs...</p>
+                                    <p className="text-slate-500 italic text-sm">{t('awaiting_calibration')}</p>
                                 )}
                             </div>
                         </div>

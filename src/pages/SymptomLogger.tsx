@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Symptom {
     id: string;
@@ -14,21 +15,22 @@ interface Symptom {
     icon: React.ReactNode;
 }
 
-const predefinedSymptoms: Symptom[] = [
-    { id: 'fatigue', name: 'Fatigue', icon: <Zap size={20} /> },
-    { id: 'dizziness', name: 'Dizziness', icon: <Wind size={20} /> },
-    { id: 'thirst', name: 'Excessive Thirst', icon: <Droplets size={20} /> },
-    { id: 'vision', name: 'Blurred Vision', icon: <Eye size={20} /> },
-    { id: 'sweating', name: 'Sweating', icon: <Thermometer size={20} /> },
-    { id: 'irritability', name: 'Irritability', icon: <Frown size={20} /> },
-    { id: 'sleep', name: 'Sleep Disturbance', icon: <Smile size={20} /> },
-];
-
 const SymptomLogger: React.FC = () => {
+    const { t } = useLanguage();
     const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
     const [severity, setSeverity] = useState(2);
     const { data: entries, addEntry, loading } = useHealthData('symptom');
     const { data: glucoseEntries } = useHealthData('glucose');
+
+    const predefinedSymptoms: Symptom[] = [
+        { id: 'fatigue', name: t('fatigue'), icon: <Zap size={20} /> },
+        { id: 'dizziness', name: t('dizziness'), icon: <Wind size={20} /> },
+        { id: 'thirst', name: t('thirst'), icon: <Droplets size={20} /> },
+        { id: 'vision', name: t('vision'), icon: <Eye size={20} /> },
+        { id: 'sweating', name: t('sweating'), icon: <Thermometer size={20} /> },
+        { id: 'irritability', name: t('irritability'), icon: <Frown size={20} /> },
+        { id: 'sleep', name: t('sleep_disturbance'), icon: <Smile size={20} /> },
+    ];
 
     const toggleSymptom = (id: string) => {
         setSelectedSymptoms(prev =>
@@ -78,13 +80,15 @@ const SymptomLogger: React.FC = () => {
             <header className="flex flex-col gap-3 relative">
                 <div className="flex items-center gap-3">
                     <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-bold uppercase tracking-widest text-[10px] px-3">Subjective Analysis</Badge>
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-bold uppercase tracking-widest text-[10px] px-3">
+                        {t('subjective_distribution')}
+                    </Badge>
                 </div>
                 <h1 className="text-5xl font-black tracking-tight text-slate-900 font-outfit uppercase leading-none drop-shadow-sm">
-                    Symptoms <span className="text-emerald-600">&</span> Wellbeing
+                    {t('symptoms')} <span className="text-emerald-600">&</span> {t('wellness')}
                 </h1>
                 <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
-                    Personalized symptom tracking to identify environmental and metabolic triggers.
+                    {t('scientific_tip')}
                 </p>
             </header>
 
@@ -99,10 +103,12 @@ const SymptomLogger: React.FC = () => {
                             <div className="flex items-center justify-between relative z-10">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Badge className="bg-white/20 hover:bg-white/30 backdrop-blur-md border-none text-white text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter">Status Report</Badge>
+                                        <Badge className="bg-white/20 hover:bg-white/30 backdrop-blur-md border-none text-white text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter">
+                                            {t('activity')}
+                                        </Badge>
                                     </div>
-                                    <CardTitle className="text-2xl font-black flex items-center gap-3 font-outfit uppercase">How are you feeling?</CardTitle>
-                                    <CardDescription className="text-emerald-100 text-xs font-medium opacity-90">Select current observations</CardDescription>
+                                    <CardTitle className="text-2xl font-black flex items-center gap-3 font-outfit uppercase">{t('how_feeling')}</CardTitle>
+                                    <CardDescription className="text-emerald-100 text-xs font-medium opacity-90">{t('select_observations')}</CardDescription>
                                 </div>
                                 <div className="h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl animate-bounce-slow">
                                     <Sparkles size={24} className="text-emerald-200" />
@@ -139,25 +145,25 @@ const SymptomLogger: React.FC = () => {
                                 <button
                                     className="group flex flex-col items-center gap-3 p-5 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/30 hover:border-emerald-400 hover:bg-white transition-all duration-300"
                                     onClick={() => {
-                                        const custom = prompt('Enter symptom name:');
+                                        const custom = prompt(t('custom_symptom_prompt'));
                                         if (custom) setSelectedSymptoms(prev => [...prev, `custom:${custom}`]);
                                     }}
                                 >
                                     <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-white text-slate-300 group-hover:text-emerald-500 transition-all shadow-inner">
                                         <Plus size={24} />
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Other</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('other')}</span>
                                 </button>
                             </div>
 
                             <div className="space-y-6 pt-4">
                                 <div className="flex items-center justify-between px-2">
-                                    <Label className="text-slate-800 font-black uppercase text-xs tracking-[0.2em]">Overall Severity</Label>
+                                    <Label className="text-slate-800 font-black uppercase text-xs tracking-[0.2em]">{t('overall_severity')}</Label>
                                     <Badge className={cn(
                                         "font-black px-4 py-1.5 text-[10px] uppercase rounded-full border-none shadow-sm",
                                         severity >= 4 ? "bg-red-50 text-red-600" : severity >= 3 ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
                                     )}>
-                                        Intensity Index: {severity}
+                                        {t('intensity_index')}: {severity}
                                     </Badge>
                                 </div>
                                 <div className="space-y-4 px-2">
@@ -169,7 +175,7 @@ const SymptomLogger: React.FC = () => {
                                         onChange={(e) => setSeverity(parseInt(e.target.value))}
                                     />
                                     <div className="flex justify-between px-1">
-                                        {['Mild', 'Normal', 'Moderate', 'Strong', 'Severe'].map((label, i) => (
+                                        {[t('mild'), t('normal'), t('moderate'), t('strong'), t('severe')].map((label, i) => (
                                             <span key={label} className={cn(
                                                 "text-[9px] font-black uppercase tracking-[0.1em]",
                                                 severity === i + 1 ? "text-emerald-600 scale-110" : "text-slate-300"
@@ -187,7 +193,7 @@ const SymptomLogger: React.FC = () => {
                                 disabled={loading || selectedSymptoms.length === 0}
                             >
                                 <span className="relative z-10 flex items-center gap-3 italic uppercase">
-                                    {loading ? 'Processing...' : 'Finalize Symptom Log'}
+                                    {loading ? t('processing') : t('finalize_symptom')}
                                     <Activity size={20} className="animate-pulse" />
                                 </span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
@@ -201,8 +207,8 @@ const SymptomLogger: React.FC = () => {
                                 <History size={20} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Feeling Cycle</h3>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Temporal Archive</p>
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">{t('feeling_cycle')}</h3>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{t('temporal_archive')}</p>
                             </div>
                         </div>
                         <div className="space-y-6 pb-10">
@@ -212,8 +218,8 @@ const SymptomLogger: React.FC = () => {
                                         <Smile size={48} className="text-slate-200" />
                                     </div>
                                     <div className="space-y-2">
-                                        <p className="text-slate-400 font-black uppercase text-xs tracking-[0.3em]">No Biometric Shifts</p>
-                                        <p className="text-slate-400 text-sm font-medium italic">Your daily wellbeing history will consolidate here.</p>
+                                        <p className="text-slate-400 font-black uppercase text-xs tracking-[0.3em]">{t('no_biometric_shifts')}</p>
+                                        <p className="text-slate-400 text-sm font-medium italic">{t('daily_wellbeing_history')}</p>
                                     </div>
                                 </div>
                             ) : (
@@ -239,7 +245,7 @@ const SymptomLogger: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4 bg-white/60 px-5 py-3 rounded-[24px] border border-white shadow-inner">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Intensity</p>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">{t('intensity')}</p>
                                                     <div className="flex gap-1.5">
                                                         {[1, 2, 3, 4, 5].map((i) => (
                                                             <div key={i} className={cn(
@@ -267,11 +273,11 @@ const SymptomLogger: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-xl font-black flex items-center gap-3 text-slate-900 uppercase tracking-tighter">
                                     <Activity className="text-emerald-600" size={28} />
-                                    Correlation Board
+                                    {t('correlation_board')}
                                 </CardTitle>
                                 <Info size={16} className="text-slate-300" />
                             </div>
-                            <CardDescription className="text-slate-400 font-medium">Metric-Symptom Pattern Analysis</CardDescription>
+                            <CardDescription className="text-slate-400 font-medium">{t('metric_pattern_analysis')}</CardDescription>
                         </CardHeader>
                         <CardContent className="px-8 pb-10">
                             <div className="h-[350px] mt-6">
@@ -328,7 +334,7 @@ const SymptomLogger: React.FC = () => {
                                         <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center mb-6 shadow-inner">
                                             <Info className="text-slate-200" size={32} />
                                         </div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Awaiting Cross-Analysis Data</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">{t('awaiting_cross_analysis')}</p>
                                     </div>
                                 )}
                             </div>
@@ -342,7 +348,7 @@ const SymptomLogger: React.FC = () => {
                         <CardHeader className="pt-10 px-8">
                             <CardTitle className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter">
                                 <Sparkles size={24} className="text-emerald-200" />
-                                Biological Insight
+                                {t('biological_insight')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-8 pb-10">
@@ -352,10 +358,10 @@ const SymptomLogger: React.FC = () => {
                                 </div>
                                 <div className="space-y-4">
                                     <p className="text-base leading-relaxed text-emerald-50 italic font-medium">
-                                        "Biometric trends indicate a <span className="font-black text-white px-1 underline decoration-emerald-400">strong correlation</span> between glucose elevations and neurological fatigue."
+                                        {t('neurological_fatigue_insight')}
                                     </p>
                                     <button className="text-[9px] font-black uppercase tracking-[0.3em] bg-white/10 hover:bg-white/25 px-5 py-2.5 rounded-full transition-all border border-white/10 hover:border-white/30 backdrop-blur-sm">
-                                        Deep Analysis View
+                                        {t('deep_analysis_view')}
                                     </button>
                                 </div>
                             </div>

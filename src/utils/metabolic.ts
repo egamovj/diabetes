@@ -1,4 +1,10 @@
 /**
+ * Unit conversion helpers
+ */
+export const mmolToMg = (mmol: number) => parseFloat((mmol * 18.0182).toFixed(1));
+export const mgToMmol = (mg: number) => parseFloat((mg / 18.0182).toFixed(1));
+
+/**
  * Clinical formula to project HbA1c from average glucose (mmol/L).
  * HbA1c (%) = (Avg Glucose mmol/L + 2.59) / 1.59
  */
@@ -28,9 +34,9 @@ export const calculateTrend = (currentData: number[], previousData: number[]) =>
  * Gets the color and status text for HbA1c levels.
  */
 export const getHbA1cStatus = (hbA1c: number) => {
-    if (hbA1c < 5.7) return { label: 'Optimal', color: 'text-emerald-500', bgColor: 'bg-emerald-50' };
-    if (hbA1c < 6.5) return { label: 'Pre-diabetic', color: 'text-amber-500', bgColor: 'bg-amber-50' };
-    return { label: 'Diabetic Range', color: 'text-red-500', bgColor: 'bg-red-50' };
+    if (hbA1c < 5.7) return { label: 'Optimal', labelKey: 'hb_optimal', color: 'text-emerald-500', bgColor: 'bg-emerald-50' };
+    if (hbA1c < 6.5) return { label: 'Pre-diabetic', labelKey: 'hb_pre', color: 'text-amber-500', bgColor: 'bg-amber-50' };
+    return { label: 'Diabetic Range', labelKey: 'hb_diabetic', color: 'text-red-500', bgColor: 'bg-red-50' };
 };
 
 /**

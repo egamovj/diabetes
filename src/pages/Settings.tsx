@@ -10,11 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { useReminders } from '../hooks/useReminders';
 import { cn } from "@/lib/utils";
 import { useTheme } from '../components/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useUnit } from '../contexts/UnitContext';
+import { Globe, Hash, Languages } from 'lucide-react';
 
 const Settings: React.FC = () => {
     const user = auth.currentUser;
     const { reminders, permission, requestPermission, toggleReminder, updateReminderTime } = useReminders();
     const { theme, setTheme } = useTheme();
+    const { language, setLanguage, t } = useLanguage();
+    const { unit, setUnit } = useUnit();
     const [displayName, setDisplayName] = useState(user?.displayName || '');
     const [photoURL] = useState(user?.photoURL || '');
     const [loading, setLoading] = useState(false);
@@ -79,13 +84,13 @@ const Settings: React.FC = () => {
             <header className="flex flex-col gap-3 relative">
                 <div className="flex items-center gap-3">
                     <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold uppercase tracking-widest text-[10px] px-3">System Identity</Badge>
+                    <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold uppercase tracking-widest text-[10px] px-3">{t('system_identity')}</Badge>
                 </div>
                 <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-white font-outfit uppercase leading-none drop-shadow-sm">
-                    Account <span className="text-emerald-600">Calibration</span>
+                    {t('account_calibration').split(' ')[0]} <span className="text-emerald-600">{t('account_calibration').split(' ')[1]}</span>
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 text-xl font-medium max-w-2xl leading-relaxed">
-                    Personalize your metabolic profile and manage clinical security protocols.
+                    {t('calibrate_desc')}
                 </p>
             </header>
 
@@ -111,10 +116,10 @@ const Settings: React.FC = () => {
                             <div className="flex items-center justify-between relative z-10">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Badge className="bg-white/20 hover:bg-white/30 backdrop-blur-md border-none text-white text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter">Profile Metadata</Badge>
+                                        <Badge className="bg-white/20 hover:bg-white/30 backdrop-blur-md border-none text-white text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter">{t('profile_metadata')}</Badge>
                                     </div>
-                                    <CardTitle className="text-3xl font-black flex items-center gap-3 font-outfit uppercase">Biographic Data</CardTitle>
-                                    <CardDescription className="text-emerald-100 text-base font-medium opacity-90">Update your clinical identity and avatar</CardDescription>
+                                    <CardTitle className="text-3xl font-black flex items-center gap-3 font-outfit uppercase">{t('biographic_data')}</CardTitle>
+                                    <CardDescription className="text-emerald-100 text-base font-medium opacity-90">{t('biographic_desc')}</CardDescription>
                                 </div>
                                 <div className="h-20 w-20 rounded-full border-4 border-white/20 overflow-hidden shadow-2xl relative group/avatar bg-white/10 backdrop-blur-xl flex items-center justify-center">
                                     {photoURL ? (
@@ -131,7 +136,7 @@ const Settings: React.FC = () => {
                                     <div className="space-y-3">
                                         <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
                                             <User size={14} className="text-emerald-500" />
-                                            Display Name
+                                            {t('display_name')}
                                         </Label>
                                         <Input
                                             placeholder="System Operator"
@@ -143,7 +148,7 @@ const Settings: React.FC = () => {
                                     <div className="space-y-3">
                                         <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
                                             <Mail size={14} className="text-emerald-500" />
-                                            Email Address
+                                            {t('email_address')}
                                         </Label>
                                         <Input
                                             value={user?.email || ''}
@@ -158,7 +163,7 @@ const Settings: React.FC = () => {
                                     disabled={loading}
                                 >
                                     <span className="flex items-center gap-3 italic uppercase text-white">
-                                        {loading ? 'Synchronizing...' : 'Commit Changes'}
+                                        {loading ? t('synchronizing') : t('commit_changes')}
                                         <Save size={20} className="text-emerald-200" />
                                     </span>
                                 </Button>
@@ -171,11 +176,11 @@ const Settings: React.FC = () => {
                         <CardHeader className="p-10 pb-6 border-b border-slate-50 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="h-1 bg-red-500 w-8 rounded-full"></div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">Emergency Protocol</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">{t('emergency_protocol')}</p>
                             </div>
                             <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
                                 <ShieldAlert size={24} className="text-red-600" />
-                                Emergency Medical ID
+                                {t('medical_id')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-10 space-y-8">
@@ -183,7 +188,7 @@ const Settings: React.FC = () => {
                                 <div className="space-y-3">
                                     <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
                                         <Activity size={14} className="text-red-500" />
-                                        Diabetes Type
+                                        {t('diabetes_type_label')}
                                     </Label>
                                     <Input
                                         value={medicalID.diabetesType}
@@ -194,7 +199,7 @@ const Settings: React.FC = () => {
                                 <div className="space-y-3">
                                     <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
                                         <Droplets size={14} className="text-red-500" />
-                                        Blood Group
+                                        {t('blood_group_label')}
                                     </Label>
                                     <Input
                                         value={medicalID.bloodType}
@@ -205,7 +210,7 @@ const Settings: React.FC = () => {
                                 <div className="space-y-3 md:col-span-2">
                                     <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
                                         <Clock size={14} className="text-red-500" />
-                                        Emergency Contact
+                                        {t('emergency_contact')}
                                     </Label>
                                     <Input
                                         placeholder="+1 (555) 000-0000"
@@ -217,13 +222,13 @@ const Settings: React.FC = () => {
                                 <div className="space-y-3 md:col-span-2">
                                     <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
                                         <Info size={14} className="text-red-500" />
-                                        Critical Notes
+                                        {t('critical_notes')}
                                     </Label>
                                     <textarea
                                         value={medicalID.notes}
                                         onChange={(e) => setMedicalID({ ...medicalID, notes: e.target.value })}
                                         className="w-full p-6 rounded-[24px] border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 transition-all font-medium text-sm border-2 min-h-[120px] dark:text-white"
-                                        placeholder="Any medications or instructions for first responders..."
+                                        placeholder={t('instructions_placeholder')}
                                     />
                                 </div>
                             </div>
@@ -233,7 +238,7 @@ const Settings: React.FC = () => {
                                 disabled={loading}
                             >
                                 <ShieldCheck size={20} />
-                                Save SOS Medical ID
+                                {t('save_medical_id')}
                             </Button>
                         </CardContent>
                     </Card>
@@ -247,15 +252,15 @@ const Settings: React.FC = () => {
                             </div>
                             <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3 dark:text-white font-outfit">
                                 <Monitor size={24} className="text-emerald-500" />
-                                System Aesthetics
+                                {t('system_aesthetics')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-10">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                 {[
-                                    { id: 'light', label: 'Light Pulse', icon: <Sun size={24} /> },
-                                    { id: 'dark', label: 'Midnight', icon: <Moon size={24} /> },
-                                    { id: 'system', label: 'Adaptive', icon: <Monitor size={24} /> }
+                                    { id: 'light', labelKey: 'light_pulse', icon: <Sun size={24} /> },
+                                    { id: 'dark', labelKey: 'midnight', icon: <Moon size={24} /> },
+                                    { id: 'system', labelKey: 'adaptive', icon: <Monitor size={24} /> }
                                 ].map((item) => (
                                     <button
                                         key={item.id}
@@ -273,7 +278,7 @@ const Settings: React.FC = () => {
                                         )}>
                                             {item.icon}
                                         </div>
-                                        <span className="font-black uppercase tracking-widest text-[10px]">{item.label}</span>
+                                        <span className="font-black uppercase tracking-widest text-[10px]">{t(item.labelKey)}</span>
                                         {theme === item.id && (
                                             <div className="absolute top-2 right-2">
                                                 <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
@@ -281,6 +286,78 @@ const Settings: React.FC = () => {
                                         )}
                                     </button>
                                 ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Language & Unit Selection Section */}
+                    <Card className="border-none shadow-[0_32px_64px_-12px_rgba(16,185,129,0.05)] dark:shadow-none bg-white dark:bg-slate-900 rounded-[40px] overflow-hidden border border-emerald-50 dark:border-slate-800">
+                        <CardHeader className="p-10 pb-6 border-b border-slate-50 dark:border-slate-800">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="h-1 bg-emerald-500 w-8 rounded-full"></div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">{t('interface_protocols')}</p>
+                            </div>
+                            <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3 dark:text-white font-outfit">
+                                <Languages size={24} className="text-emerald-500" />
+                                {t('language_selection')} & {t('unit_selection')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-10 space-y-10">
+                            {/* Language Selector */}
+                            <div className="space-y-4">
+                                <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
+                                    <Globe size={14} className="text-emerald-500" />
+                                    {t('language_selection')}
+                                </Label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                    {[
+                                        { id: 'en', label: 'English', flag: '🇺🇸' },
+                                        { id: 'ru', label: 'Русский', flag: '🇷🇺' },
+                                        { id: 'uz', label: "O'zbekcha", flag: '🇺🇿' }
+                                    ].map((lang) => (
+                                        <button
+                                            key={lang.id}
+                                            onClick={() => setLanguage(lang.id as any)}
+                                            className={cn(
+                                                "flex items-center justify-between p-6 rounded-[24px] border-2 transition-all duration-300",
+                                                language === lang.id
+                                                    ? "bg-emerald-600 border-emerald-600 text-white shadow-lg"
+                                                    : "bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-800"
+                                            )}
+                                        >
+                                            <span className="text-xl">{lang.flag}</span>
+                                            <span className="font-black uppercase tracking-widest text-[10px]">{lang.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Unit Selector */}
+                            <div className="space-y-4 pt-4 border-t border-slate-50 dark:border-slate-800">
+                                <Label className="text-slate-500 dark:text-slate-400 font-black ml-1 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
+                                    <Hash size={14} className="text-emerald-500" />
+                                    {t('unit_selection')}
+                                </Label>
+                                <div className="grid grid-cols-2 gap-6">
+                                    {[
+                                        { id: 'mmol/L', label: 'mmol/L', desc: 'Global Standard' },
+                                        { id: 'mg/dL', label: 'mg/dL', desc: 'Imperial Units' }
+                                    ].map((u) => (
+                                        <button
+                                            key={u.id}
+                                            onClick={() => setUnit(u.id as any)}
+                                            className={cn(
+                                                "flex flex-col items-start gap-1 p-6 rounded-[24px] border-2 transition-all duration-300",
+                                                unit === u.id
+                                                    ? "bg-emerald-600 border-emerald-600 text-white shadow-lg"
+                                                    : "bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-slate-800"
+                                            )}
+                                        >
+                                            <span className="font-black text-xl">{u.id}</span>
+                                            <span className="font-black uppercase tracking-widest text-[8px] opacity-60">{u.desc}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -307,7 +384,7 @@ const Settings: React.FC = () => {
                                         permission === 'granted' ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800" : "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800"
                                     )}
                                 >
-                                    {permission === 'granted' ? 'Notifications Active' : 'Enable Notifications'}
+                                    {permission === 'granted' ? t('notifications_active') : t('enable_notifications')}
                                 </Button>
                             </div>
                         </CardHeader>
@@ -366,8 +443,8 @@ const Settings: React.FC = () => {
                         <CardContent className="px-10 pb-10 space-y-8">
                             <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/10 group/item hover:bg-white/10 transition-all">
                                 <div className="space-y-1">
-                                    <p className="text-lg font-bold">Credential Reset</p>
-                                    <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-sm">Dispatch a secured password reset link to <span className="text-emerald-400">{user?.email}</span></p>
+                                    <p className="text-lg font-bold">{t('credential_reset')}</p>
+                                    <p className="text-sm text-slate-400 font-medium leading-relaxed max-w-sm">{t('dispatch_reset_desc')}</p>
                                 </div>
                                 <Button
                                     onClick={handlePasswordReset}
@@ -375,7 +452,7 @@ const Settings: React.FC = () => {
                                     className="border-white/20 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white rounded-2xl h-14 px-8 font-black uppercase text-[10px] tracking-widest transition-all"
                                     disabled={loading}
                                 >
-                                    Reset Password
+                                    {t('reset_password_btn')}
                                 </Button>
                             </div>
                         </CardContent>
@@ -386,8 +463,8 @@ const Settings: React.FC = () => {
                 <div className="lg:col-span-12 xl:col-span-5 space-y-8">
                     <Card className="border-none bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-10 rounded-[48px] space-y-8">
                         <div className="space-y-2">
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">System Health</h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-loose">Real-time status of your metabolic interface</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">{t('system_health')}</h3>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-loose">{t('real_time_status')}</p>
                         </div>
 
                         <div className="space-y-6">
@@ -405,8 +482,8 @@ const Settings: React.FC = () => {
                                     <Lock size={22} />
                                 </div>
                                 <div className="space-y-0.5">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Encryption</p>
-                                    <p className="text-lg font-black text-slate-800 dark:text-slate-200">AES-256 Protocol</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('encryption_level')}</p>
+                                    <p className="text-lg font-black text-slate-800 dark:text-slate-200">{t('aes_protocol')}</p>
                                 </div>
                             </div>
                         </div>
@@ -427,7 +504,7 @@ const Settings: React.FC = () => {
                         <p className="text-[10px] font-black uppercase tracking-widest">Node ID: DC-{user?.uid.slice(0, 8).toUpperCase()}</p>
                         <div className="flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Bio-Link Active</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">{t('bio_link_active')}</span>
                         </div>
                     </div>
                 </div>

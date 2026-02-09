@@ -11,12 +11,16 @@ import { exportToCSV } from '../utils/export';
 import { useReminders } from '../hooks/useReminders';
 import { analyzeGlucoseTrend } from '../utils/prediction';
 import { BrainCircuit, Zap, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useUnit } from '../contexts/UnitContext';
 
 const Dashboard: React.FC = () => {
     const { data: glucoseEntries } = useHealthData('glucose');
     const { data: symptomEntries } = useHealthData('symptom');
     const { data: mealEntries } = useHealthData('meal');
     const { reminders } = useReminders();
+    const { t } = useLanguage();
+    const { unit, convert } = useUnit();
 
     const latestGlucose = glucoseEntries[0]?.value || 0;
     const avgGlucose = glucoseEntries.length > 0
@@ -51,10 +55,14 @@ const Dashboard: React.FC = () => {
 
     const chartData = [...glucoseEntries].reverse().map(g => ({
         time: g.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        level: g.value
+        level: convert(g.value)
     })).slice(-10);
 
     const prediction = analyzeGlucoseTrend(glucoseEntries);
+
+    const trendIcon = glucoseTrend === 'rising' ? <TrendingUp size={14} className="rotate-0" /> :
+        glucoseTrend === 'falling' ? <TrendingUp size={14} className="rotate-180" /> :
+            <Activity size={14} />;
 
     const activityFeed = [...glucoseEntries, ...symptomEntries]
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -76,13 +84,13 @@ const Dashboard: React.FC = () => {
                 <div className="space-y-3">
                     <div className="flex items-center gap-3">
                         <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                        <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold uppercase tracking-widest text-[10px] px-3">System Synopsis</Badge>
+                        <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 font-bold uppercase tracking-widest text-[10px] px-3">{t('system_synopsis')}</Badge>
                     </div>
                     <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-white font-outfit uppercase leading-none drop-shadow-sm">
-                        Health <span className="text-emerald-600">Overview</span>
+                        {t('health_overview').split(' ')[0]} <span className="text-emerald-600">{t('health_overview').split(' ')[1]}</span>
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-xl font-medium max-w-2xl leading-relaxed">
-                        Personalized health analytics and real-time biometric synchronization.
+                        {t('personalized_analytics')}
                     </p>
                 </div>
 
@@ -91,7 +99,7 @@ const Dashboard: React.FC = () => {
                     className="h-16 px-8 rounded-[24px] bg-white dark:bg-slate-900 border-2 border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:border-emerald-200 dark:hover:border-emerald-800 shadow-xl shadow-emerald-200/20 dark:shadow-none font-black uppercase text-[10px] tracking-widest gap-3 transition-all group"
                 >
                     <Download size={20} className="group-hover:-translate-y-1 transition-transform" />
-                    Dispatch Report
+                    {t('dispatch_report')}
                 </Button>
             </header>
 
@@ -99,14 +107,14 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
                 <Card className="border-none shadow-[0_32px_64px_-12px_rgba(16,185,129,0.1)] dark:shadow-none bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-900 dark:to-slate-900/50 rounded-[40px] overflow-hidden group hover:scale-[1.02] transition-all border border-white/50 dark:border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Latest Glucose</CardTitle>
+                        <CardTitle className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">{t('latest_glucose')}</CardTitle>
                         <div className="h-12 w-12 rounded-[20px] bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-inner">
                             <Droplets size={24} />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div className="text-5xl font-black text-slate-900 dark:text-white font-outfit">
-                            {latestGlucose} <span className="text-lg font-bold text-slate-400 dark:text-slate-500">mmol/L</span>
+                            {convert(latestGlucose)} <span className="text-lg font-bold text-slate-400 dark:text-slate-500">{unit}</span>
                         </div>
                         <div className="mt-6 flex items-center gap-2">
                             <Badge className={cn(
@@ -115,10 +123,8 @@ const Dashboard: React.FC = () => {
                                     glucoseTrend === 'falling' ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400" :
                                         "bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500"
                             )}>
-                                {glucoseTrend === 'rising' && <TrendingUp size={14} className="rotate-0" />}
-                                {glucoseTrend === 'falling' && <TrendingUp size={14} className="rotate-180" />}
-                                {glucoseTrend === 'stable' && <Activity size={14} />}
-                                Trend: {glucoseTrend}
+                                {trendIcon}
+                                {t('glucose_trends').split(' ')[0]}: {t(glucoseTrend)}
                             </Badge>
                         </div>
                     </CardContent>
@@ -129,7 +135,7 @@ const Dashboard: React.FC = () => {
                         <ShieldCheck size={120} strokeWidth={1} />
                     </div>
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
-                        <CardTitle className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Metabolic Projection</CardTitle>
+                        <CardTitle className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">{t('metabolic_projection')}</CardTitle>
                         <div className="h-12 w-12 rounded-[20px] bg-white/10 dark:bg-emerald-950/30 backdrop-blur-md text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xl">
                             <Info size={24} />
                         </div>
@@ -143,7 +149,7 @@ const Dashboard: React.FC = () => {
                                 "border-none font-black py-1.5 px-4 rounded-full text-[9px] uppercase tracking-tighter",
                                 hbStatus.bgColor, hbStatus.color
                             )}>
-                                Status: {hbStatus.label}
+                                Status: {t(hbStatus.labelKey)}
                             </Badge>
                         </div>
                     </CardContent>
@@ -151,7 +157,7 @@ const Dashboard: React.FC = () => {
 
                 <Card className="border-none shadow-[0_32px_64px_-12px_rgba(20,184,166,0.1)] dark:shadow-none bg-gradient-to-br from-teal-600 to-emerald-900 dark:from-teal-950 dark:to-emerald-950 rounded-[40px] overflow-hidden group hover:scale-[1.02] transition-all text-white border border-white/5 dark:border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-black text-teal-200 dark:text-teal-400 uppercase tracking-[0.2em]">{nextReminder ? 'Scheduled Protocol' : 'No Scheduled Alerts'}</CardTitle>
+                        <CardTitle className="text-[10px] font-black text-teal-200 dark:text-teal-400 uppercase tracking-[0.2em]">{nextReminder ? t('scheduled_protocol') : t('no_scheduled_alerts')}</CardTitle>
                         <div className="h-12 w-12 rounded-[20px] bg-white/10 dark:bg-emerald-950/30 text-white flex items-center justify-center group-hover:bg-white group-hover:text-teal-900 dark:group-hover:text-teal-400 transition-all shadow-xl backdrop-blur-md">
                             <BellRing size={24} />
                         </div>
@@ -160,7 +166,7 @@ const Dashboard: React.FC = () => {
                         {nextReminder ? (
                             <>
                                 <div className="text-4xl font-black font-outfit truncate">
-                                    {nextReminder.time} <span className="text-sm font-bold text-teal-300/60 font-outfit uppercase tracking-widest ml-1">Next Check</span>
+                                    {nextReminder.time} <span className="text-sm font-bold text-teal-300/60 font-outfit uppercase tracking-widest ml-1">{t('next_check')}</span>
                                 </div>
                                 <div className="mt-4">
                                     <Badge className="bg-white/10 dark:bg-emerald-950/50 text-white border-none font-black py-1 px-3 rounded-full text-[9px] uppercase tracking-tighter truncate max-w-full block">
@@ -170,7 +176,7 @@ const Dashboard: React.FC = () => {
                             </>
                         ) : (
                             <div className="text-xl font-black font-outfit opacity-40 py-4">
-                                Monitoring Disengaged
+                                {t('monitoring_disengaged')}
                             </div>
                         )}
                     </CardContent>
@@ -178,7 +184,7 @@ const Dashboard: React.FC = () => {
 
                 <Card className="border-none shadow-[0_32px_64px_-12px_rgba(5,150,105,0.1)] dark:shadow-none bg-gradient-to-br from-white to-emerald-50/20 dark:from-slate-900 dark:to-slate-900/50 rounded-[40px] overflow-hidden group hover:scale-[1.02] transition-all border border-white/50 dark:border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Carb Intake</CardTitle>
+                        <CardTitle className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">{t('carb_intake')}</CardTitle>
                         <div className="h-12 w-12 rounded-[20px] bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 dark:group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-inner">
                             <Utensils size={24} />
                         </div>
@@ -187,7 +193,7 @@ const Dashboard: React.FC = () => {
                         <div className="text-5xl font-black text-slate-900 dark:text-white font-outfit">
                             {todayCarbs} <span className="text-lg font-bold text-slate-400 dark:text-slate-500">g</span>
                         </div>
-                        <p className="text-[10px] text-emerald-500 dark:text-emerald-400 mt-6 font-black uppercase tracking-widest opacity-60">Daily cumulative</p>
+                        <p className="text-[10px] text-emerald-500 dark:text-emerald-400 mt-6 font-black uppercase tracking-widest opacity-60">{t('daily_cumulative')}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -218,38 +224,38 @@ const Dashboard: React.FC = () => {
                                 prediction.riskLevel === 'CRITICAL' ? "bg-red-500 text-white" :
                                     prediction.riskLevel === 'WATCHFUL' ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
                             )}>
-                                AI Prediction: {prediction.riskLevel}
+                                {t('ai_prediction')}: {prediction.riskLevel}
                             </Badge>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Next 60 Minutes</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('next_60_min')}</span>
                         </div>
 
                         <div className="space-y-1">
                             <h2 className="text-3xl font-black font-outfit uppercase tracking-tight leading-none">
-                                {prediction.message}
+                                {t(prediction.messageKey)}
                             </h2>
                             <p className="text-emerald-400 font-bold text-sm italic">
-                                {prediction.advice}
+                                {t(prediction.adviceKey)}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
                             <div className="space-y-0.5">
-                                <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Projected Level</p>
-                                <p className="text-xl font-black font-outfit">{prediction.projectedValue} <small className="text-[10px] opacity-40">mmol/L</small></p>
+                                <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{t('projected_level')}</p>
+                                <p className="text-xl font-black font-outfit">{convert(prediction.projectedValue)} <small className="text-[10px] opacity-40">{unit}</small></p>
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Rate of Change</p>
+                                <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{t('rate_of_change')}</p>
                                 <p className={cn(
                                     "text-xl font-black font-outfit",
                                     prediction.velocity < 0 ? "text-red-400" : "text-emerald-400"
                                 )}>
-                                    {prediction.velocity > 0 ? '+' : ''}{prediction.velocity} <small className="text-[10px] opacity-40">/h</small>
+                                    {prediction.velocity > 0 ? '+' : ''}{convert(prediction.velocity)} <small className="text-[10px] opacity-40">{unit}/h</small>
                                 </p>
                             </div>
                             {prediction.riskLevel !== 'OPTIMAL' && (
                                 <div className="hidden lg:flex items-center gap-2 col-span-2 bg-white/5 rounded-2xl px-4 border border-white/5">
                                     <Zap size={16} className="text-amber-400" />
-                                    <p className="text-[10px] font-bold text-slate-300">Predictive engine suggests checking IOB or consuming glucose based on velocity.</p>
+                                    <p className="text-[10px] font-bold text-slate-300">{t('ai_suggestion')}</p>
                                 </div>
                             )}
                         </div>
@@ -259,7 +265,7 @@ const Dashboard: React.FC = () => {
                         <div className="flex flex-col gap-2">
                             <Button className="bg-red-600 hover:bg-red-700 h-14 rounded-2xl font-black px-8 uppercase text-[10px] tracking-widest gap-2">
                                 <AlertTriangle size={16} />
-                                Urgent Action
+                                {t('urgent_action')}
                             </Button>
                         </div>
                     )}
@@ -274,9 +280,9 @@ const Dashboard: React.FC = () => {
                             <div className="space-y-1">
                                 <CardTitle className="text-2xl font-black flex items-center gap-3 uppercase tracking-tighter dark:text-white">
                                     <TrendingUp className="text-emerald-600" size={32} />
-                                    Glucose Trends
+                                    {t('glucose_trends')}
                                 </CardTitle>
-                                <CardDescription className="text-slate-400 dark:text-slate-500 font-medium">Visualizing biological patterns over time</CardDescription>
+                                <CardDescription className="text-slate-400 dark:text-slate-500 font-medium">{t('patterns_visual')}</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
@@ -332,7 +338,7 @@ const Dashboard: React.FC = () => {
                                 <div className="h-24 w-24 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-inner mb-6 transition-transform hover:scale-110 border border-slate-100 dark:border-slate-700">
                                     <Activity size={48} className="text-slate-200 dark:text-slate-700" />
                                 </div>
-                                <p className="font-black uppercase tracking-widest text-xs">No analytics available</p>
+                                <p className="font-black uppercase tracking-widest text-xs">{t('awaiting_calibration')}</p>
                             </div>
                         )}
                     </CardContent>
@@ -346,8 +352,8 @@ const Dashboard: React.FC = () => {
                                 <Clock size={20} />
                             </div>
                             <div>
-                                <CardTitle className="text-xl font-black uppercase tracking-tighter dark:text-white">Activity</CardTitle>
-                                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Latest Updates</CardDescription>
+                                <CardTitle className="text-xl font-black uppercase tracking-tighter dark:text-white">{t('activity')}</CardTitle>
+                                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">{t('latest_updates')}</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
@@ -365,13 +371,13 @@ const Dashboard: React.FC = () => {
                                         <div className="flex-1">
                                             <p className="font-black text-slate-800 dark:text-white leading-none text-base">
                                                 {item.value !== undefined
-                                                    ? `${item.value}`
+                                                    ? `${convert(item.value)}`
                                                     : (item.names || []).join(', ')
                                                 }
-                                                <small className="text-[10px] ml-1 text-slate-400 dark:text-slate-500 font-bold uppercase">{item.value !== undefined ? 'mmol/L' : ''}</small>
+                                                <small className="text-[10px] ml-1 text-slate-400 dark:text-slate-500 font-bold uppercase">{item.value !== undefined ? unit : ''}</small>
                                             </p>
                                             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest mt-1 opacity-60">
-                                                {item.value !== undefined ? 'Glucose' : 'Symptoms'}
+                                                {item.value !== undefined ? t('glucose') : t('symptoms')}
                                             </p>
                                         </div>
                                         <div className="text-[10px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-tighter bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1 rounded-full">
@@ -384,14 +390,14 @@ const Dashboard: React.FC = () => {
                                     <div className="bg-slate-50 dark:bg-slate-800 rounded-full h-20 w-20 mx-auto flex items-center justify-center mb-6 shadow-inner border border-slate-100 dark:border-slate-700">
                                         <Clock size={32} className="text-slate-200 dark:text-slate-700" />
                                     </div>
-                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em]">Silent System</p>
+                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em]">{t('silent_system')}</p>
                                 </div>
                             )}
                         </div>
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -6,8 +6,8 @@ export interface PredictionResult {
     riskLevel: RiskLevel;
     projectedValue: number;
     velocity: number; // mmol/L per hour
-    message: string;
-    advice: string;
+    messageKey: string;
+    adviceKey: string;
 }
 
 /**
@@ -21,8 +21,8 @@ export const analyzeGlucoseTrend = (entries: HealthEntry[]): PredictionResult =>
             riskLevel: 'STABLE',
             projectedValue: entries[0]?.value || 0,
             velocity: 0,
-            message: "Awaiting biological calibration...",
-            advice: "Add more readings for AI predictive insights."
+            messageKey: "awaiting_calibration",
+            adviceKey: "add_readings"
         };
     }
 
@@ -41,40 +41,40 @@ export const analyzeGlucoseTrend = (entries: HealthEntry[]): PredictionResult =>
     const projectedValue = parseFloat((latest.value + velocity).toFixed(1));
 
     let riskLevel: RiskLevel = 'STABLE';
-    let message = "System status within nominal range.";
-    let advice = "Continue standard metabolic monitoring.";
+    let messageKey = "stability";
+    let adviceKey = "equilibrum";
 
     if (latest.value >= 4.0 && latest.value <= 8.5) {
         riskLevel = 'OPTIMAL';
-        message = "Metabolic equilibrium achieved.";
-        advice = "Biometric stability detected.";
+        messageKey = "equilibrum";
+        adviceKey = "stability";
     }
 
     // Hypoglycemia prediction (The primary goal)
     if (projectedValue < 4.4) {
         riskLevel = 'WATCHFUL';
-        message = "Biological trend approaching threshold.";
-        advice = "Consider a proactive fast-acting carb intake (15g).";
+        messageKey = "approaching_threshold";
+        adviceKey = "proactive_carb";
     }
 
     if (projectedValue < 3.9 || (velocity < -2 && latest.value < 6)) {
         riskLevel = 'CRITICAL';
-        message = "Rapid downward trajectory detected.";
-        advice = "Immediate clinical action advised. Verify with fingerstick.";
+        messageKey = "rapid_drop";
+        adviceKey = "clinical_action";
     }
 
     // Hyperglycemia warning
     if (projectedValue > 11.0) {
         riskLevel = 'WATCHFUL';
-        message = "Elevated glycemic projection detected.";
-        advice = "Verify insulin active (IOB) and hydration levels.";
+        messageKey = "elevated_projection";
+        adviceKey = "verify_iob";
     }
 
     return {
         riskLevel,
         projectedValue,
         velocity: parseFloat(velocity.toFixed(2)),
-        message,
-        advice
+        messageKey,
+        adviceKey
     };
 };

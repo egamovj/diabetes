@@ -7,6 +7,7 @@ import { signOut } from 'firebase/auth';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import SOSModal from './SOSModal';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,18 +16,19 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const { t } = useLanguage();
 
   const handleLogout = () => {
     signOut(auth);
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
-    { name: 'Glucose', path: '/glucose', icon: <LineChart size={20} /> },
-    { name: 'Symptoms', path: '/symptoms', icon: <Activity size={20} /> },
-    { name: 'Calculator', path: '/calculator', icon: <Calculator size={20} /> },
-    { name: 'Wellness', path: '/wellness', icon: <User size={20} /> },
-    { name: 'Medical Lab', path: '/lab', icon: <FlaskConical size={20} /> },
+    { name: t('dashboard'), path: '/', icon: <Home size={20} /> },
+    { name: t('glucose'), path: '/glucose', icon: <LineChart size={20} /> },
+    { name: t('symptoms'), path: '/symptoms', icon: <Activity size={20} /> },
+    { name: t('calculator'), path: '/calculator', icon: <Calculator size={20} /> },
+    { name: t('wellness'), path: '/wellness', icon: <User size={20} /> },
+    { name: t('medical_lab'), path: '/lab', icon: <FlaskConical size={20} /> },
   ];
 
   return (
@@ -48,7 +50,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
           <div className="px-4 mb-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Main Menu</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{t('dashboard')}</p>
           </div>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -76,7 +78,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           })}
 
           <div className="px-4 mt-8 mb-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Settings</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{t('settings')}</p>
           </div>
           <Link
             to="/settings"
@@ -89,7 +91,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <div className="flex items-center gap-3">
               <Settings size={20} className={cn("transition-colors", location.pathname === '/settings' ? "text-white" : "group-hover:text-emerald-600")} />
-              Account Settings
+              {t('settings')}
             </div>
           </Link>
         </nav>
@@ -100,7 +102,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             className="w-full h-14 rounded-2xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all font-black text-xs uppercase tracking-widest border border-red-100 dark:border-red-900/50 shadow-sm flex items-center justify-center gap-3"
           >
             <ShieldAlert size={18} />
-            SOS Emergency
+            {t('sos')}
           </Button>
           <Button
             variant="ghost"
@@ -108,7 +110,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             className="w-full justify-start gap-4 h-12 rounded-2xl text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 font-bold transition-all group"
           >
             <LogOut size={20} className="group-hover:-translate-x-0.5 transition-transform text-slate-400 dark:text-slate-500 group-hover:text-red-600" />
-            Logout Identity
+            {t('logout')}
           </Button>
         </div>
       </aside>

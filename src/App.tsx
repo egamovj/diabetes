@@ -1,4 +1,6 @@
 import { ThemeProvider } from './components/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { UnitProvider } from './contexts/UnitContext';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -36,30 +38,38 @@ function App() {
   if (!user) {
     return (
       <ThemeProvider defaultTheme="dark" storageKey="diabetes-ui-theme">
-        <Router>
-          <Routes>
-            <Route path="*" element={<Auth />} />
-          </Routes>
-        </Router>
+        <LanguageProvider>
+          <UnitProvider>
+            <Router>
+              <Routes>
+                <Route path="*" element={<Auth />} />
+              </Routes>
+            </Router>
+          </UnitProvider>
+        </LanguageProvider>
       </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="diabetes-ui-theme">
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/glucose" element={<GlucoseTracker />} />
-            <Route path="/symptoms" element={<SymptomLogger />} />
-            <Route path="/calculator" element={<InsulinCalculator />} />
-            <Route path="/wellness" element={<Wellness />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/lab" element={<MetabolicLab />} />
-          </Routes>
-        </Layout>
-      </Router>
+      <LanguageProvider>
+        <UnitProvider>
+          <Router>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/glucose" element={<GlucoseTracker />} />
+                <Route path="/symptoms" element={<SymptomLogger />} />
+                <Route path="/calculator" element={<InsulinCalculator />} />
+                <Route path="/wellness" element={<Wellness />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/lab" element={<MetabolicLab />} />
+              </Routes>
+            </Layout>
+          </Router>
+        </UnitProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

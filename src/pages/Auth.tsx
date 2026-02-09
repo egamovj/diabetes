@@ -14,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Auth: React.FC = () => {
+    const { t } = useLanguage();
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
@@ -40,7 +42,7 @@ const Auth: React.FC = () => {
                 }
             }
         } catch (err: any) {
-            setError(err.message || 'An error occurred during authentication');
+            setError(err.message || t('auth_error') || 'An error occurred during authentication');
             setLoading(false);
         }
     };
@@ -51,21 +53,21 @@ const Auth: React.FC = () => {
         try {
             await signInWithPopup(auth, provider);
         } catch (err: any) {
-            setError(err.message || 'Social login failed');
+            setError(err.message || t('social_failed') || 'Social login failed');
             setLoading(false);
         }
     };
 
     const handleForgotPassword = async () => {
         if (!email) {
-            setError('Please enter your email address first');
+            setError(t('enter_email_first') || 'Please enter your email address first');
             return;
         }
         try {
             await sendPasswordResetEmail(auth, email);
-            alert('Password reset email sent! Please check your inbox.');
+            alert(t('reset_sent') || 'Password reset email sent! Please check your inbox.');
         } catch (err: any) {
-            setError(err.message || 'Failed to send reset email');
+            setError(err.message || t('reset_failed') || 'Failed to send reset email');
         }
     };
 
@@ -83,10 +85,10 @@ const Auth: React.FC = () => {
                             <Activity size={40} className="text-emerald-200" />
                         </div>
                         <h1 className="text-7xl font-black tracking-tighter leading-none font-outfit uppercase italic">
-                            Metabolic <br /> <span className="text-emerald-300">Unity</span>
+                            {t('metabolic_unity').split(' ')[0]} <br /> <span className="text-emerald-300">{t('metabolic_unity').split(' ')[1]}</span>
                         </h1>
                         <p className="text-xl text-emerald-50/80 font-medium leading-relaxed max-w-md">
-                            Harmonizing biological data with intuitive technology for clinical-grade metabolic control.
+                            {t('harmonizing_desc')}
                         </p>
                     </div>
 
@@ -96,8 +98,8 @@ const Auth: React.FC = () => {
                                 <ShieldCheck size={28} className="text-emerald-300" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="font-black uppercase tracking-widest text-[10px] text-emerald-200">Encryption Level</h4>
-                                <p className="text-lg font-bold">Biometric Vault Protocols</p>
+                                <h4 className="font-black uppercase tracking-widest text-[10px] text-emerald-200">{t('encryption_level')}</h4>
+                                <p className="text-lg font-bold">{t('biometric_vault')}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-6 group">
@@ -105,8 +107,8 @@ const Auth: React.FC = () => {
                                 <Activity size={28} className="text-emerald-300" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="font-black uppercase tracking-widest text-[10px] text-emerald-200">Analytical Depth</h4>
-                                <p className="text-lg font-bold">Real-time Glycemic Insight</p>
+                                <h4 className="font-black uppercase tracking-widest text-[10px] text-emerald-200">{t('analytical_depth')}</h4>
+                                <p className="text-lg font-bold">{t('glycemic_insight')}</p>
                             </div>
                         </div>
                     </div>
@@ -133,13 +135,13 @@ const Auth: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-3 justify-center lg:justify-start">
                             <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                            <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-black uppercase tracking-widest text-[10px] px-3">System Access</Badge>
+                            <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-black uppercase tracking-widest text-[10px] px-3">{t('system_access')}</Badge>
                         </div>
                         <CardTitle className="text-5xl font-black tracking-tight text-slate-900 font-outfit uppercase italic leading-none">
-                            {isLogin ? 'Initialize' : 'Register'}
+                            {isLogin ? t('initialize') : t('register')}
                         </CardTitle>
                         <CardDescription className="text-slate-500 font-medium text-lg pt-1">
-                            {isLogin ? 'Authenticating metabolic credentials' : 'Creating high-fidelity patient profile'}
+                            {isLogin ? t('auth_credentials') : t('create_profile')}
                         </CardDescription>
                     </CardHeader>
 
@@ -159,7 +161,7 @@ const Auth: React.FC = () => {
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         className="space-y-2 overflow-hidden"
                                     >
-                                        <Label htmlFor="name" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">Full Name</Label>
+                                        <Label htmlFor="name" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">{t('full_name')}</Label>
                                         <div className="relative group/input">
                                             <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-emerald-600 transition-colors" size={18} />
                                             <Input
@@ -176,7 +178,7 @@ const Auth: React.FC = () => {
                             </AnimatePresence>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">Email Address</Label>
+                                <Label htmlFor="email" className="text-slate-500 font-black ml-1 uppercase text-[10px] tracking-[0.2em]">{t('email_address')}</Label>
                                 <div className="relative group/input">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-emerald-600 transition-colors" size={18} />
                                     <Input
@@ -193,14 +195,14 @@ const Auth: React.FC = () => {
 
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-1">
-                                    <Label htmlFor="password" className="text-slate-500 font-black uppercase text-[10px] tracking-[0.2em]">Access Password</Label>
+                                    <Label htmlFor="password" className="text-slate-500 font-black uppercase text-[10px] tracking-[0.2em]">{t('access_password')}</Label>
                                     {isLogin && (
                                         <button
                                             type="button"
                                             onClick={handleForgotPassword}
                                             className="text-[10px] font-black underline uppercase text-emerald-600 hover:text-emerald-700 tracking-widest"
                                         >
-                                            Forgot Token?
+                                            {t('forgot_token')}
                                         </button>
                                     )}
                                 </div>
@@ -231,7 +233,7 @@ const Auth: React.FC = () => {
                                 disabled={loading}
                             >
                                 <span className="relative z-10 flex items-center gap-3">
-                                    {loading ? 'Processing...' : (isLogin ? 'Gain Access' : 'Establish Profile')}
+                                    {loading ? t('processing') : (isLogin ? t('gain_access') : t('establish_profile'))}
                                     {!loading && <ArrowRight className="animate-pulse" size={20} />}
                                 </span>
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
@@ -243,7 +245,7 @@ const Auth: React.FC = () => {
                                 <span className="w-full border-t border-slate-100" />
                             </div>
                             <div className="relative flex justify-center text-[9px] uppercase font-black tracking-[0.4em] text-slate-300">
-                                <span className="bg-white/90 px-4">Social Interface</span>
+                                <span className="bg-white/90 px-4">{t('social_interface')}</span>
                             </div>
                         </div>
 
@@ -275,12 +277,12 @@ const Auth: React.FC = () => {
 
                     <CardFooter className="justify-center pb-10 pt-0">
                         <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                            {isLogin ? "New to the system?" : "Return to protocol?"}
+                            {isLogin ? t('new_to_system') : t('return_to_protocol')}
                             <button
                                 className="ml-2 text-emerald-600 hover:text-emerald-700 underline decoration-emerald-200 underline-offset-4"
                                 onClick={() => setIsLogin(!isLogin)}
                             >
-                                {isLogin ? 'Open Account' : 'Identify Status'}
+                                {isLogin ? t('open_account') : t('identify_status')}
                             </button>
                         </p>
                     </CardFooter>
