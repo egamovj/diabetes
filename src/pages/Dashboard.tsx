@@ -1,10 +1,13 @@
 import React from 'react';
-import { Flame, Utensils, Droplets, TrendingUp, Activity, Clock } from 'lucide-react';
+import { Flame, Utensils, Droplets, TrendingUp, Activity, Clock, Download, Info, ShieldCheck } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useHealthData } from '../hooks/useHealthData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { calculateHbA1c, calculateTrend, getHbA1cStatus } from '../utils/metabolic';
+import { exportToCSV } from '../utils/export';
 
 const Dashboard: React.FC = () => {
     const { data: glucoseEntries } = useHealthData('glucose');
@@ -13,8 +16,25 @@ const Dashboard: React.FC = () => {
 
     const latestGlucose = glucoseEntries[0]?.value || 0;
     const avgGlucose = glucoseEntries.length > 0
-        ? (glucoseEntries.reduce((acc, g) => acc + g.value, 0) / glucoseEntries.length).toFixed(1)
-        : '0.0';
+        ? parseFloat((glucoseEntries.reduce((acc, g) => acc + g.value, 0) / glucoseEntries.length).toFixed(1))
+        : 0;
+
+    const projectedHbA1c = calculateHbA1c(avgGlucose);
+    const hbStatus = getHbA1cStatus(projectedHbA1c);
+
+    // Trend analysis (Last 14 days vs previous 14 days)
+    const now = new Date();
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const twentyEightDaysAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
+
+    const currentPeriodGlucose = glucoseEntries
+        .filter(g => g.timestamp >= fourteenDaysAgo)
+        .map(g => g.value);
+    const previousPeriodGlucose = glucoseEntries
+        .filter(g => g.timestamp >= twentyEightDaysAgo && g.timestamp < fourteenDaysAgo)
+        .map(g => g.value);
+
+    const glucoseTrend = calculateTrend(currentPeriodGlucose, previousPeriodGlucose);
 
     const todayCarbs = mealEntries.reduce((acc, m) => acc + (m.carbs || 0), 0);
     const totalInsulin = mealEntries.reduce((acc, m) => acc + (m.insulin || 0), 0);
@@ -28,27 +48,43 @@ const Dashboard: React.FC = () => {
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
         .slice(0, 8);
 
+    const handleExport = () => {
+        const allData = [...glucoseEntries, ...symptomEntries, ...mealEntries]
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        exportToCSV(allData, `diabetes_report_${new Date().toISOString().split('T')[0]}`);
+    };
+
     return (
         <div className="relative space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
             {/* Background Decorative Element */}
             <div className="absolute -top-20 -right-20 w-96 h-96 bg-emerald-100/30 rounded-full blur-[120px] -z-10 animate-pulse"></div>
             <div className="absolute top-1/2 -left-20 w-80 h-80 bg-teal-100/20 rounded-full blur-[100px] -z-10"></div>
 
-            <header className="flex flex-col gap-3 relative">
-                <div className="flex items-center gap-3">
-                    <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-bold uppercase tracking-widest text-[10px] px-3">System Synopsis</Badge>
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <div className="h-1 bg-emerald-500 w-12 rounded-full"></div>
+                        <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50/50 font-bold uppercase tracking-widest text-[10px] px-3">System Synopsis</Badge>
+                    </div>
+                    <h1 className="text-5xl font-black tracking-tight text-slate-900 font-outfit uppercase leading-none drop-shadow-sm">
+                        Health <span className="text-emerald-600">Overview</span>
+                    </h1>
+                    <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
+                        Personalized health analytics and real-time biometric synchronization.
+                    </p>
                 </div>
-                <h1 className="text-5xl font-black tracking-tight text-slate-900 font-outfit uppercase leading-none drop-shadow-sm">
-                    Health <span className="text-emerald-600">Overview</span>
-                </h1>
-                <p className="text-slate-500 text-xl font-medium max-w-2xl leading-relaxed">
-                    Personalized health analytics and real-time biometric synchronization.
-                </p>
+
+                <Button
+                    onClick={handleExport}
+                    className="h-16 px-8 rounded-[24px] bg-white border-2 border-emerald-100 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 shadow-xl shadow-emerald-200/20 font-black uppercase text-[10px] tracking-widest gap-3 transition-all group"
+                >
+                    <Download size={20} className="group-hover:-translate-y-1 transition-transform" />
+                    Dispatch Report
+                </Button>
             </header>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
                 <Card className="border-none shadow-[0_32px_64px_-12px_rgba(16,185,129,0.1)] bg-gradient-to-br from-white to-emerald-50/30 rounded-[40px] overflow-hidden group hover:scale-[1.02] transition-all">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                         <CardTitle className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Latest Glucose</CardTitle>
@@ -61,8 +97,41 @@ const Dashboard: React.FC = () => {
                             {latestGlucose} <span className="text-lg font-bold text-slate-400">mmol/L</span>
                         </div>
                         <div className="mt-6 flex items-center gap-2">
-                            <Badge className="bg-emerald-600/10 text-emerald-700 hover:bg-emerald-600/20 border-none font-black py-1.5 px-4 rounded-full text-[10px] uppercase group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                                <TrendingUp size={14} className="mr-1.5" /> Average: {avgGlucose}
+                            <Badge className={cn(
+                                "border-none font-black py-1.5 px-4 rounded-full text-[10px] uppercase transition-all flex items-center gap-1.5",
+                                glucoseTrend === 'rising' ? "bg-red-50 text-red-600" :
+                                    glucoseTrend === 'falling' ? "bg-emerald-50 text-emerald-600" :
+                                        "bg-slate-50 text-slate-400"
+                            )}>
+                                {glucoseTrend === 'rising' && <TrendingUp size={14} className="rotate-0" />}
+                                {glucoseTrend === 'falling' && <TrendingUp size={14} className="rotate-180" />}
+                                {glucoseTrend === 'stable' && <Activity size={14} />}
+                                Trend: {glucoseTrend}
+                            </Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-[0_32px_64px_-12px_rgba(16,185,129,0.1)] bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[40px] overflow-hidden group hover:scale-[1.02] transition-all text-white relative">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4">
+                        <ShieldCheck size={120} strokeWidth={1} />
+                    </div>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 relative z-10">
+                        <CardTitle className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Metabolic Projection</CardTitle>
+                        <div className="h-12 w-12 rounded-[20px] bg-white/10 backdrop-blur-md text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-xl">
+                            <Info size={24} />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                        <div className="text-5xl font-black font-outfit">
+                            {projectedHbA1c}% <span className="text-lg font-bold text-white/40 italic">HbA1c</span>
+                        </div>
+                        <div className="mt-6">
+                            <Badge className={cn(
+                                "border-none font-black py-1.5 px-4 rounded-full text-[9px] uppercase tracking-tighter",
+                                hbStatus.bg, hbStatus.color
+                            )}>
+                                Status: {hbStatus.label}
                             </Badge>
                         </div>
                     </CardContent>
